@@ -1,0 +1,6 @@
+{
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "src/lib/json-20240303-javadoc.jar"
+    ]
+}
