@@ -143,7 +143,7 @@ public class VectorSearch {
                 Double.parseDouble(a.split("Similarity: ")[1])
         ));
 
-        return results
+        return results;
 
     }
 }
