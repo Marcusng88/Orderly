@@ -4,6 +4,15 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
@@ -20,11 +29,12 @@ public class VectorSearch {
             String endpoint = "http://localhost:5000/get_embeddings"; // Replace with your Hugging Face URL if applicable
 
             // Dynamically insert the sentence into the JSON payload
-            String sentencesJson = String.format("""
-                {
-                    "sentences": ["%s"]
-                }
-                """, sentence);
+            String sentencesJson = String.format(
+                    """
+                    {
+                        "sentences": ["%s"]
+                    }
+                    """, sentence);
 
             // Create HTTP Client
             HttpClient client = HttpClient.newHttpClient();
@@ -67,8 +77,77 @@ public class VectorSearch {
             return null; // Return null if there's an error
         }
     }
+    
+    //this will calculate the similarity of the two vectors(similarity between two sentences)
+    public static double cosineSimilarity(double[] vectorA, double[] vectorB){
+        double dotProduct = 0.0;
+        double normA = 0.0;
+        double normB = 0.0;
+        // this uses the formula cosine tetha = (dot product A and B)/(magnitude A * magnitude B)
+        // to find cosine similarity 
+        for (int i =0; i<vectorA.length;i++){
+            dotProduct+= vectorA[i] + vectorB[i];
+            normA+= Math.pow(vectorA[i], 2);
+            normB+= Math.pow(vectorB[i], 2);
+        }
+        return (dotProduct/(Math.sqrt(normA)* Math.sqrt(normB)));
+    }
+    
+    public static List<String> searchTasks(String query){
+        List<String> results = new ArrayList<>();
+        double[] queryVector = getEmbeddings(query);
+        if (queryVector==null){
+            return results;
+        }
+        
+        //put the url for the database here
+        String url = "";
+        // database username here
+        String user = "";
+        // database password here;
+        String password = "";
 
+        //this also need modification,depends on the table created(just for temporary)
+        String sql = "SELECT title,description,due_date,category,status,embedding FROM tasks";
+
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()){
+
+                while (rs.next()){
+                    String title = rs.getString("title");
+                    String description = rs.getString("description");
+                    String dueDate = rs.getString("due_date");
+                    String category = rs.getString("category");
+                    String status = rs.getString("status");
+                    String embeddingString = rs.getString("embedding").replace("[", "").replace("]", "");
+                    //Arrays.stream converts the array of strings into stream of strings.Stream is sequence of elements that can be processed parallel
+                    // the split (",") is to split the embedding e.g "0.1,0.2,0.3" into "0.1" "0.2" "0.3"
+                    //.mapToDouble(Double::parseDouble) convert each string of a number into an actual double
+                    double[] taskEmbedding = Arrays.stream(embeddingString.split(",")).mapToDouble(Double::parseDouble).toArray();
+
+                    double similarity = cosineSimilarity(queryVector, taskEmbedding);
+                    
+                    results.add(String.format("Title: %s, Description: %s, Due Date: %s, Category: %s, Status: %s, Similarity: %.2f",
+                    title,description,dueDate,category,status,similarity));
+        }
+                
+
+        }catch(SQLException e){
+            System.out.println(e.getMessage());
+        }
+
+        //this will sort the results in descending order,using comparator and lambda expressions
+        results.sort((a,b)-> Double.compare(
+                Double.parseDouble(b.split("Similarity: ")[1]),
+                Double.parseDouble(a.split("Similarity: ")[1])
+        ));
+
+        return results
+
+    }
 }
+
 
 
 
