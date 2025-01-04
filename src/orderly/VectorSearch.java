@@ -5,6 +5,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.sql.Connection;
+
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,7 +13,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
-
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
@@ -22,7 +23,14 @@ import com.google.gson.JsonParser;
 
 public class VectorSearch {
 
-    // this will generate vectors embedding for the task description,it will return a double array
+    //put the url for the database here
+    private static String url = "jdbc:mysql://localhost:3306/todolist";
+    // database username here
+    private static String user = "root";
+    // database password here;
+    private static String password = "755788";
+
+    // this will generate vectors embedding for the task title,it will return a double array
     public static double[] getEmbeddings(String sentence) {
         try {
             // API Endpoint for the Python Flask server or Hugging Face hosted model
@@ -77,6 +85,23 @@ public class VectorSearch {
             return null; // Return null if there's an error
         }
     }
+    public static void updateEmbeddings(int taskId,double[] embeddings){
+        String sql = "UPDATE tasks SET vector = ? where id = ?";
+
+        try (Connection conn = DriverManager.getConnection(url,user,password);
+            PreparedStatement pstmt = conn.prepareStatement(sql)){
+
+                Gson gson = new Gson();
+                String embeddingString = gson.toJson(embeddings);
+
+                pstmt.setString(1, embeddingString);
+                pstmt.setInt(2,taskId);
+
+                pstmt.executeUpdate();
+            } catch(SQLException e){
+                System.out.println(e.getMessage());
+            }
+    }
     
     //this will calculate the similarity of the two vectors(similarity between two sentences)
     public static double cosineSimilarity(double[] vectorA, double[] vectorB){
@@ -100,36 +125,41 @@ public class VectorSearch {
             return results;
         }
         
-        //put the url for the database here
-        String url = "";
-        // database username here
-        String user = "";
-        // database password here;
-        String password = "";
+        // //put the url for the database here
+        // String url = "jdbc:mysql://localhost:3306/todolist";
+        // // database username here
+        // String user = "root";
+        // // database password here;
+        // String password = "755788";
 
         //this also need modification,depends on the table created(just for temporary)
-        String sql = "SELECT title,description,due_date,category,status,embedding FROM tasks";
+        String sql = "SELECT * FROM tasks";
 
         try (Connection conn = DriverManager.getConnection(url, user, password);
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()){
-
+                Gson gson= new Gson();
                 while (rs.next()){
+                    
                     String title = rs.getString("title");
                     String description = rs.getString("description");
                     String dueDate = rs.getString("due_date");
+                    String priority =rs.getString("priority");
+                    String recurrence = rs.getString("recurrence_interval");
+                    String dependency = rs.getString("dependencies");
                     String category = rs.getString("category");
                     String status = rs.getString("status");
-                    String embeddingString = rs.getString("embedding").replace("[", "").replace("]", "");
+                    String embeddingString = rs.getString("vector");
                     //Arrays.stream converts the array of strings into stream of strings.Stream is sequence of elements that can be processed parallel
                     // the split (",") is to split the embedding e.g "0.1,0.2,0.3" into "0.1" "0.2" "0.3"
                     //.mapToDouble(Double::parseDouble) convert each string of a number into an actual double
-                    double[] taskEmbedding = Arrays.stream(embeddingString.split(",")).mapToDouble(Double::parseDouble).toArray();
 
+                    
+                    double[] taskEmbedding = gson.fromJson(embeddingString,double[].class);
                     double similarity = cosineSimilarity(queryVector, taskEmbedding);
                     
-                    results.add(String.format("Title: %s, Description: %s, Due Date: %s, Category: %s, Status: %s, Similarity: %.2f",
-                    title,description,dueDate,category,status,similarity));
+                    results.add(String.format("[%s] Title: %s, Description: %s, Due Date: %s, Category: %s, Priority: %s, Recurrence: %s,Dependency: %s, Similarity: %.5f ",
+                    status,title,description,dueDate,category,priority,recurrence,dependency,similarity));
         }
                 
 
