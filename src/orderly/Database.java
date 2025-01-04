@@ -81,6 +81,7 @@ public class Database {
             System.out.println("SQL Error: " + e.getMessage());
             return 0;
         }
+        
     }
 
     public int updateTask(int target,String field,String newData){
@@ -111,7 +112,7 @@ public class Database {
 
             // Combine title and description to form the new sentence
             String newSentence = title + " " + desc;
-            
+
             // regenerate the vector for modified description or title
             double[] newEmbeddings = VectorSearch.getEmbeddings(newSentence);
             Gson gson = new Gson();

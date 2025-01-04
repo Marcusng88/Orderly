@@ -127,10 +127,31 @@ public class Task {
             return false;
         }
     }
+    public void searchTask(ArrayList<Task> tasks,Database db){
+        ArrayList<Task> allWork = db.readAll();
 
-    public void searchTasks(ArrayList<Task> tasks,Database db){
+        System.out.println(ANSI_GREEN+"=== Search Tasks ==="+ANSI_RESET);
+        System.out.print("Enter a keyword to search by title or description: ");
+        String keyword = input.nextLine();
+
+        ArrayList<Task> res = SearchingTask.searchTasks(allWork, keyword);
+        if (res.isEmpty()){
+            System.out.println("No task found");
+        }
+        else{
+            for(Task element: res){
+                Searching result =new Searching(element.title,element.dueDate,element.category,element.priority,element.status);
+                String x = result.toString();
+                System.out.println(x);
+            }
+        }
+
+
+    }
+
+    public void searchTasksVector(ArrayList<Task> tasks,Database db){
         System.out.println(ANSI_YELLOW+"=== Search Tasks ==="+ANSI_RESET);
-        System.out.print("Enter a keyword or phrase to search tasks: assignment : "+ANSI_RESET);
+        System.out.print("Enter a keyword or phrase to search tasks: "+ANSI_RESET);
         String keyword = input.nextLine();
         
         List<String> res = VectorSearch.searchTasks(keyword);

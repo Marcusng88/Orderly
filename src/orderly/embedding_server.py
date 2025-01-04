@@ -1,4 +1,4 @@
-# pip install flask sentence-transformers
+# pip install flask sentence_transformers
 from flask import Flask, request, jsonify
 from sentence_transformers import SentenceTransformer
 

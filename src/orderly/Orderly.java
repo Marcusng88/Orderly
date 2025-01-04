@@ -34,7 +34,7 @@ public class Orderly {
             DependencyTask dependencyManager = new DependencyTask();
 
             // Display menu ; Prompt user for action
-            int action = mainMenu();
+            int action = mainMenu();           
             input.nextLine();
             switch (action) {
                 case 1 -> manager.viewAll(tasks);
@@ -74,8 +74,11 @@ public class Orderly {
                     }
                 }
                 case 5 -> manager.deleteTask(tasks, todolist);
-                case 6 -> manager.searchTasks(tasks,todolist);
-                case 7 -> {
+                case 6 -> System.out.println(); // recurrence task
+                case 7 -> System.out.println(); // sort task
+                case 8 -> manager.searchTask(tasks,todolist); // normal search
+                case 9 -> manager.searchTasksVector(tasks,todolist); // vector search
+                case 10 -> {
                     System.out.println(ANSI_RED + "Exiting Orderly..." + ANSI_RESET);
                     break mainMenu;
                 }
@@ -88,13 +91,16 @@ public class Orderly {
     private static int mainMenu(){
         System.out.println(ANSI_YELLOW + "\n=== Welcome to Orderly ===" + ANSI_RESET);
         System.out.println("What would you like to do?");
-        System.out.println("1. View Tasks");
-        System.out.println("2. Add a New Task");
-        System.out.println("3. Manage a Task");
-        System.out.println("4. Edit a Task");
-        System.out.println("5. Delete a Task");
-        System.out.println("6. Search a Task");
-        System.out.println("7. Exit Program");
+        System.out.println("1.  View Tasks");
+        System.out.println("2.  Add a New Task");
+        System.out.println("3.  Manage a Task");
+        System.out.println("4.  Edit a Task");
+        System.out.println("5.  Delete a Task");
+        System.out.println("6.  Set a recurrence task");
+        System.out.println("7.  Sort task");
+        System.out.println("8.  Search a Task");
+        System.out.println("9.  Search a Task (using similarity search)");
+        System.out.println("10. Exit Program");
         System.out.print(ANSI_PURPLE + "Choose a task >> " + ANSI_YELLOW);
 
         return input.nextInt();
