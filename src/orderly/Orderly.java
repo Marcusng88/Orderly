@@ -154,7 +154,7 @@ public class Orderly {
                             case 4 -> manager.setDueDate(tasks, todolist);
                             case 5 -> manager.setCategory(tasks, todolist);
                             case 6 -> manager.setPriority(tasks, todolist);
-                            case 7 -> manager.setPriority(tasks, todolist);
+                            case 7 -> {break mgmtMenu;}
                             default -> System.out.println(ANSI_RED + "\nInvalid choice. Please Try again.\n" + ANSI_RESET);
                         }
                     }
