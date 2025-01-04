@@ -1,20 +1,6 @@
+package orderly;
 import java.sql.*;
 import java.util.*;
-
-class Task{
-    int id;
-    String title; 
-    String status;
-    List<Integer> dependencies;
-
-
-    public Task (int id, String title, String status, List<Integer> dependencies){
-        this.id = id;
-        this.title = title;
-        this.status = status;
-        this.dependencies = dependencies;
-    }
-}
 
 public class taskDependencies {
     private Connection connection;
@@ -26,25 +12,6 @@ public class taskDependencies {
         }catch (SQLException e){
             e.printStackTrace();
             System.out.println("Error connecting to the database.");
-        }
-    }
-
-    //create a new task
-    public void createTask(String title){
-        String sql = "INSERT INTO tasks (title) VALUES (?)";
-        
-        try(PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
-            stmt.setString(1, title);
-            stmt.executeUpdate();
-            
-            ResultSet rs = stmt.getGeneratedKeys();
-            if(rs.next()){
-                int id = rs.getInt(1);
-                System.out.println("Task \""+ title +" \"created with ID: "+ id);
-            }
-            
-        }catch(SQLException e){
-            e.printStackTrace();
         }
     }
 
