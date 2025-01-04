@@ -64,11 +64,11 @@ public class DependencyTask extends Task{
     }
 
     public void setDependencies(){    
-        System.out.println(ANSI_YELLOW + "\n=== Change Task Title ===" + ANSI_RESET);
-        System.out.print("Enter the task number you want to modify: ");
+        System.out.println(ANSI_YELLOW + "\n=== Set Dependencies ===" + ANSI_RESET);
+        System.out.print("Enter task " + ANSI_CYAN + "number" + ANSI_RESET + " that depends on another task: ");
         int dependentId = input.nextInt();
         input.nextLine();
-        System.out.print("Enter a new title for the task: ");
+        System.out.print("Enter the task " + ANSI_CYAN + "number" + ANSI_RESET + " it depends on: ");
         int dependencyId = input.nextInt();
         
         try{

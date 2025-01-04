@@ -56,6 +56,9 @@ public class Task {
                         if(dependencies.length() > 0){
                             System.out.printf("| %-7d | %-20s | %-52s | %-12s | %-12s | %-13s | %-10s | %-12s |\n",
                             task.taskID, task.title, descLines[i], task.status, task.dueDate, task.category, task.priority, dependencies);
+                        }else{
+                            System.out.printf("| %-7d | %-20s | %-52s | %-12s | %-12s | %-13s | %-10s | %-12s |\n",
+                            task.taskID, task.title, descLines[i], task.status, task.dueDate, task.category, task.priority, "None");
                         }
                     } catch (SQLException e){
                         System.out.println("SQL Error: " + e.getMessage());
@@ -67,7 +70,7 @@ public class Task {
                 }
             }
         }
-        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------\n");
+        System.out.println("-------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     }
 
     private String[] splitDescription(String desc, int maxLength) {
