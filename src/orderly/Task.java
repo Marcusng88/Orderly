@@ -1,9 +1,13 @@
 package orderly;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Task {
@@ -32,22 +36,41 @@ public class Task {
     }
 
     public void viewAll(ArrayList<Task> tasks){
-        System.out.println(ANSI_CYAN + "----------------------------------------------------------------------------------------------------------------------------------------------------");
-        System.out.println("| Task ID | Title                | Description                                          | Status       | Due Date     | Category      | Priority   |");
-        System.out.println("|---------|----------------------|------------------------------------------------------|--------------|--------------|---------------|------------|");
+        Database todolist = new Database();
+        System.out.println(ANSI_CYAN + "-------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        System.out.println("| Task ID | Title                | Description                                          | Status       | Due Date     | Category      | Priority   | Dependencies |");
+        System.out.println("|---------|----------------------|------------------------------------------------------|--------------|--------------|---------------|------------|--------------|");
+        
         for(Task task : tasks){
             String[] descLines = splitDescription(task.desc, 52);
             for (int i = 0; i < descLines.length; i++) {
                 if (i == 0) {
-                    System.out.printf("| %-7d | %-20s | %-52s | %-12s | %-12s | %-13s | %-10s |\n",
-                            task.taskID, task.title, descLines[i], task.status, task.dueDate, task.category, task.priority);
+                    String depSql = "SELECT dependency_id FROM task_dependencies WHERE task_id = ?";
+                    try(PreparedStatement depStmt = todolist.db.prepareStatement(depSql)){
+                        depStmt.setInt(1,task.taskID);
+                        ResultSet depRs = depStmt.executeQuery();
+                        StringBuilder dependencies = new StringBuilder();
+                        while (depRs.next()){
+                            dependencies.append(depRs.getInt("dependency_id")).append(" ");
+                        }
+                        if(dependencies.length() > 0){
+                            System.out.printf("| %-7d | %-20s | %-52s | %-12s | %-12s | %-13s | %-10s | %-12s |\n",
+                            task.taskID, task.title, descLines[i], task.status, task.dueDate, task.category, task.priority, dependencies);
+                        }else{
+                            System.out.printf("| %-7d | %-20s | %-52s | %-12s | %-12s | %-13s | %-10s | %-12s |\n",
+                            task.taskID, task.title, descLines[i], task.status, task.dueDate, task.category, task.priority, "None");
+                        }
+                    } catch (SQLException e){
+                        System.out.println("SQL Error: " + e.getMessage());
+                    }
+                    
                 } else {
-                    System.out.printf("| %-7s | %-20s | %-52s | %-12s | %-12s | %-13s | %-10s |\n",
-                            "", "", descLines[i], "", "", "", "");
+                    System.out.printf("| %-7s | %-20s | %-52s | %-12s | %-12s | %-13s | %-10s | %-12s |\n",
+                            "", "", descLines[i], "", "", "", "", "");
                 }
             }
         }
-        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------\n");
+        System.out.println("-------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     }
 
     private String[] splitDescription(String desc, int maxLength) {
@@ -105,23 +128,98 @@ public class Task {
         }
     }
 
-    public void setCompletion(ArrayList<Task> tasks,Database db){
+    //mark the task as complete
+    public void markTaskComplete() {
+        Database todolist = new Database();
         System.out.println(ANSI_YELLOW + "\n=== Mark Task Completion ===" + ANSI_RESET);
         System.out.print("Enter the task number you want to mark as complete: ");
         int target = input.nextInt();
         input.nextLine();
-        
-        for(Task task : tasks){
-            if(task.taskID == target){
-                int update = db.updateTask(target, "status", "Complete");
-                if(update >= 1){
-                    System.out.println(ANSI_GREEN + "Task \"" + task.title + "\" marked as complete!\n" + ANSI_RESET);
-                }else{
-                    System.out.println(ANSI_RED + "Failed to update task completion\n" + ANSI_RESET);
+
+        try {
+
+            // Fetch the task's dependencies
+            String fetchSql = "SELECT dependency_id FROM task_dependencies WHERE task_id = ?";
+            List<Integer> dependencies = new ArrayList<>();
+
+            try (PreparedStatement fetchStmt = todolist.db.prepareStatement(fetchSql)) {
+                fetchStmt.setInt(1, target);
+                ResultSet rs = fetchStmt.executeQuery();
+
+                while(rs.next()){
+                    dependencies.add(rs.getInt("dependency_id"));
+                }
+
+            }
+
+            // Check if all dependencies are complete
+            for (int depId : dependencies) {
+                String checkSql = "SELECT status FROM tasks WHERE id = ?";
+
+                try (PreparedStatement checkStmt = todolist.db.prepareStatement(checkSql)) {
+                    checkStmt.setInt(1, depId);
+                    ResultSet rs = checkStmt.executeQuery();
+                    
+                    if(rs.next()){
+                        String dependencyStatus = rs.getString("status");
+
+                        if (!"Complete".equalsIgnoreCase(dependencyStatus)) {
+                            System.out.println("Warning: Task ID " + target + " cannot be marked as complete because it depends on Task ID " + depId + " which is not complete!");
+                            return;
+                        }
+                    } else{
+                        System.out.println("Dependency Task ID " + depId + " not found in the tasks table.");
+                        return;
+                    }
                 }
             }
+            // Fetch title using target
+            String fetchTitleSql = "SELECT title FROM tasks WHERE id = ?";
+            String taskTitle = "";
+
+            try (PreparedStatement fetchStmt = todolist.db.prepareStatement(fetchTitleSql)) {
+                fetchStmt.setInt(1, target);
+                ResultSet rs = fetchStmt.executeQuery();
+
+                if (rs.next()) {
+                    taskTitle = rs.getString("title");
+                } else {
+                    System.out.println("Task ID " + target + " not found.");
+                    return;
+                }
+            }
+            
+
+            //if all dependencies are complete, mark task as complete
+            String updateSql = "UPDATE tasks SET status = 'Complete' WHERE id = ?";
+            try(PreparedStatement updateStmt = todolist.db.prepareStatement(updateSql)){
+                updateStmt.setInt(1, target);
+                updateStmt.executeUpdate();
+                System.out.println("Task \"" + taskTitle + "\" marked as complete!");
+            }
+            
+        } catch (SQLException e) {
+            System.out.println("SQL Error: " + e.getMessage());
         }
     }
+
+    //public void setCompletion(ArrayList<Task> tasks,Database db){
+    //    System.out.println(ANSI_YELLOW + "\n=== Mark Task Completion ===" + ANSI_RESET);
+    //    System.out.print("Enter the task number you want to mark as complete: ");
+    //    int target = input.nextInt();
+    //    input.nextLine();
+        
+    //    for(Task task : tasks){
+    //        if(task.taskID == target){
+    //            int update = db.updateTask(target, "status", "Complete");
+    //            if(update >= 1){
+    //                System.out.println(ANSI_GREEN + "Task \"" + task.title + "\" marked as complete!\n" + ANSI_RESET);
+    //            }else{
+    //                System.out.println(ANSI_RED + "Failed to update task completion\n" + ANSI_RESET);
+    //            }
+    //        }
+    //    }
+    //}
 
     public void setTitle(ArrayList<Task> tasks,Database db){
         System.out.println(ANSI_YELLOW + "\n=== Change Task Title ===" + ANSI_RESET);
