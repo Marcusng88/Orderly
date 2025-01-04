@@ -10,6 +10,16 @@
 <project name="Orderly" default="default" basedir=".">
     <description>Builds, tests, and runs the project Orderly.</description>
     <import file="nbproject/build-impl.xml"/>
+    <path id="classpath">
+    <fileset dir="lib">
+        <include name="*.jar"/>
+    </fileset>
+</path>
+
+<target name="compile" depends="init">
+    <javac srcdir="src" destdir="build" classpathref="classpath"/>
+</target>
+
     <!--
 
     There exist several targets which are by default empty and which can be 

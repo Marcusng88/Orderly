@@ -111,7 +111,7 @@ public class VectorSearch {
         // this uses the formula cosine tetha = (dot product A and B)/(magnitude A * magnitude B)
         // to find cosine similarity 
         for (int i =0; i<vectorA.length;i++){
-            dotProduct+= vectorA[i] + vectorB[i];
+            dotProduct+= vectorA[i] * vectorB[i];
             normA+= Math.pow(vectorA[i], 2);
             normB+= Math.pow(vectorB[i], 2);
         }
@@ -160,7 +160,7 @@ public class VectorSearch {
                     
                     results.add(String.format("[%s] Title: %s, Description: %s, Due Date: %s, Category: %s, Priority: %s, Recurrence: %s,Dependency: %s, Similarity: %.5f ",
                     status,title,description,dueDate,category,priority,recurrence,dependency,similarity));
-        }
+                }
                 
 
         }catch(SQLException e){
@@ -173,7 +173,7 @@ public class VectorSearch {
                 Double.parseDouble(a.split("Similarity: ")[1])
         ));
 
-        return results;
+        return results.size() > 2 ? results.subList(0, 2) : results;
 
     }
 }

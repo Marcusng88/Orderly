@@ -128,6 +128,19 @@ public class Task {
         }
     }
 
+    public void searchTasks(ArrayList<Task> tasks,Database db){
+        System.out.println(ANSI_YELLOW+"=== Search Tasks ==="+ANSI_RESET);
+        System.out.print("Enter a keyword or phrase to search tasks: assignment : "+ANSI_RESET);
+        String keyword = input.nextLine();
+        
+        List<String> res = VectorSearch.searchTasks(keyword);
+        System.out.println(ANSI_GREEN+"=== Vector Search Results ==="+ANSI_RESET);
+        for (String element: res){
+            System.out.printf("%s\n",element.substring(0, element.indexOf("Recurrence")-2)); 
+            
+        }
+    }
+
     //mark the task as complete
     public void markTaskComplete() {
         Database todolist = new Database();
