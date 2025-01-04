@@ -3,16 +3,28 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
 package orderly;
-import java.sql.*;
+
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 // import java.util.Arrays;
 
 public class Orderly {
-private static List<Task> tasks = new ArrayList<>();
-    private static Connection connection;
+
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_WHITE = "\u001B[37m";
+
+    public static Scanner input = new Scanner(System.in);
+    static ArrayList<Task> tasks = new ArrayList<>();
+
+    // Create database object to set connection
+    public static Database todolist = new Database();
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -131,26 +143,43 @@ private static List<Task> tasks = new ArrayList<>();
                     System.out.println("Task updated successfully!");
                 }
                 case 3 -> {
-                    System.out.print("Enter the new due date (YYYY-MM-DD): ");
-                    task.setDueDate(scanner.nextLine());
-                    updateTaskInDatabase(task);
-                    System.out.println("Task updated successfully!");
+                    mgmtMenu:
+                    while (true) { 
+                        action = mgmtMenu();
+                        input.nextLine();
+                        switch (action) {
+                            case 1 -> manager.markTaskComplete();
+                            case 2 -> manager.setTitle(tasks, todolist);
+                            case 3 -> manager.setDescription(tasks, todolist);
+                            case 4 -> manager.setDueDate(tasks, todolist);
+                            case 5 -> manager.setCategory(tasks, todolist);
+                            case 6 -> manager.setPriority(tasks, todolist);
+                            case 7 -> manager.setPriority(tasks, todolist);
+                            default -> System.out.println(ANSI_RED + "\nInvalid choice. Please Try again.\n" + ANSI_RESET);
+                        }
+                    }
                 }
                 case 4 -> {
-                    System.out.print("Enter the new category: ");
-                    task.setCategory(scanner.nextLine());
-                    updateTaskInDatabase(task);
-                    System.out.println("Task updated successfully!");
+                    editMenu:
+                    while (true) { 
+                        action = editMenu();
+                        input.nextLine();
+                        switch (action) {
+                            case 1 -> dependencyManager.setTitle(tasks, todolist);
+                            case 2 -> dependencyManager.setDescription(tasks, todolist);
+                            case 3 -> dependencyManager.setDueDate(tasks, todolist);
+                            case 4 -> dependencyManager.setCategory(tasks, todolist);
+                            case 5 -> dependencyManager.setPriority(tasks, todolist);
+                            case 6 -> dependencyManager.setDependencies();
+                            case 7 -> {break editMenu;}
+                            default -> System.out.println(ANSI_RED + "\nInvalid choice. Please Try again.\n" + ANSI_RESET);
+                        }
+                    }
                 }
-                case 5 -> {
-                    System.out.print("Enter the new priority (Low, Medium, High): ");
-                    task.setPriority(scanner.nextLine());
-                    updateTaskInDatabase(task);
-                    System.out.println("Task updated successfully!");
-                }
+                case 5 -> manager.deleteTask(tasks, todolist);
                 case 6 -> {
-                    markTaskAsComplete(task);
-                    task.setStatus("Complete");
+                    System.out.println(ANSI_RED + "Exiting Orderly..." + ANSI_RESET);
+                    break mainMenu;
                 }
                 case 7 -> System.out.println("Edit canceled.");
                 default -> System.out.println("Invalid choice.");
@@ -184,60 +213,32 @@ class Task {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    private static int mgmtMenu(){
+        System.out.println(ANSI_YELLOW + "\n=== Task Management ===" + ANSI_RESET);
+        System.out.println("1. Mark Task Completion");
+        System.out.println("2. Change Task Title");
+        System.out.println("3. Change Task Description");
+        System.out.println("4. Change Task Due Date");
+        System.out.println("5. Change Task Category");
+        System.out.println("6. Change Task Priority");
+        System.out.println("7. Back to Main Menu");
+        System.out.print(ANSI_PURPLE + "Choose an action >> " + ANSI_YELLOW);
+
+        return input.nextInt();
     }
 
-    public String getTitle() {
-        return title;
+    private static int editMenu(){
+        System.out.println(ANSI_YELLOW + "\n=== Edit Task ===" + ANSI_RESET);
+        System.out.println("1. Change Task Title");
+        System.out.println("2. Change Task Description");
+        System.out.println("3. Change Task Due Date");
+        System.out.println("4. Change Task Category");
+        System.out.println("5. Change Task Priority");
+        System.out.println("6. Set Dependency");
+        System.out.println("7. Back to Main Menu");
+        System.out.print(ANSI_PURPLE + "Choose an action >> " + ANSI_YELLOW);
+
+        return input.nextInt();
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getDueDate() {
-        return dueDate;
-    }
-
-    public void setDueDate(String dueDate) {
-        this.dueDate = dueDate;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public String getPriority() {
-        return priority;
-    }
-
-    public void setPriority(String priority) {
-        this.priority = priority;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    @Override
-    public String toString() {
-        return "[" + status + "] " + title + " - Due: " + dueDate + " - Category: " + category + " - Priority: " + priority;
-    }
 }
