@@ -26,7 +26,7 @@ public class Orderly {
 
     public static void main(String[] args) {
 
-        menu:
+        mainMenu:
         while (true) { 
             // Fill tasks arraylist with database data
             tasks = todolist.readAll();
@@ -39,31 +39,41 @@ public class Orderly {
                 case 1 -> manager.viewAll(tasks);
                 case 2 -> manager.newTask(todolist);
                 case 3 -> {
-                    action = mgmtMenu();
-                    input.nextLine();
-                    switch (action) {
-                        case 1 -> manager.setCompletion(tasks, todolist);
-                        case 2 -> manager.setTitle(tasks, todolist);
-                        case 3 -> manager.setDescription(tasks, todolist);
-                        case 4 -> manager.setDueDate(tasks, todolist);
-                        case 5 -> manager.setCategory(tasks, todolist);
-                        case 6 -> manager.setPriority(tasks, todolist);
+                    mgmtMenu:
+                    while (true) { 
+                        action = mgmtMenu();
+                        input.nextLine();
+                        switch (action) {
+                            case 1 -> manager.setCompletion(tasks, todolist);
+                            case 2 -> manager.setTitle(tasks, todolist);
+                            case 3 -> manager.setDescription(tasks, todolist);
+                            case 4 -> manager.setDueDate(tasks, todolist);
+                            case 5 -> manager.setCategory(tasks, todolist);
+                            case 6 -> manager.setPriority(tasks, todolist);
+                            case 7 -> {break mgmtMenu;}
+                            default -> System.out.println(ANSI_RED + "\nInvalid choice. Please Try again.\n" + ANSI_RESET);
+                        }
                     }
                 }
-                case 4 -> {
-                    break menu;
+                case 4 -> manager.deleteTask(tasks, todolist);
+                case 5 -> {
+                    System.out.println(ANSI_RED + "Exiting Orderly..." + ANSI_RESET);
+                    break mainMenu;
                 }
+                default -> System.out.println(ANSI_RED + "\nInvalid choice. Please Try again.\n" + ANSI_RESET);
             }
         }
         
     }
     
     private static int mainMenu(){
-        System.out.println(ANSI_YELLOW + "=== Welcome to Oerderly ===" + ANSI_RESET);
+        System.out.println(ANSI_YELLOW + "\n=== Welcome to Oerderly ===" + ANSI_RESET);
         System.out.println("What would you like to do?");
         System.out.println("1. View Tasks");
         System.out.println("2. Add a New Task");
         System.out.println("3. Manage a Task");
+        System.out.println("4. Delete a Task");
+        System.out.println("5. Exit Program");
         System.out.print(ANSI_PURPLE + "Choose a task >> " + ANSI_YELLOW);
 
         return input.nextInt();
@@ -77,6 +87,7 @@ public class Orderly {
         System.out.println("4. Change Task Due Date");
         System.out.println("5. Change Task Category");
         System.out.println("6. Change Task Priority");
+        System.out.println("7. Back to Main Menu");
         System.out.print(ANSI_PURPLE + "Choose an action >> " + ANSI_YELLOW);
 
         return input.nextInt();

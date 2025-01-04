@@ -6,7 +6,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-class Task {
+public class Task {
     int taskID;
     String title,desc,status,dueDate,category,priority;
     public Scanner input = new Scanner(System.in);
@@ -36,10 +36,32 @@ class Task {
         System.out.println("| Task ID | Title                | Description                                          | Status       | Due Date     | Category      | Priority   |");
         System.out.println("|---------|----------------------|------------------------------------------------------|--------------|--------------|---------------|------------|");
         for(Task task : tasks){
-            System.out.printf("| %-7d | %-20s | %-52s | %-12s | %-12s | %-13s | %-10s |\n",
-            task.taskID,task.title,task.desc,task.status,task.dueDate,task.category,task.priority);
+            String[] descLines = splitDescription(task.desc, 52);
+            for (int i = 0; i < descLines.length; i++) {
+                if (i == 0) {
+                    System.out.printf("| %-7d | %-20s | %-52s | %-12s | %-12s | %-13s | %-10s |\n",
+                            task.taskID, task.title, descLines[i], task.status, task.dueDate, task.category, task.priority);
+                } else {
+                    System.out.printf("| %-7s | %-20s | %-52s | %-12s | %-12s | %-13s | %-10s |\n",
+                            "", "", descLines[i], "", "", "", "");
+                }
+            }
         }
         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    }
+
+    private String[] splitDescription(String desc, int maxLength) {
+        ArrayList<String> lines = new ArrayList<>();
+        while (desc.length() > maxLength) {
+            int splitIndex = desc.lastIndexOf(' ', maxLength);
+            if (splitIndex == -1) {
+                splitIndex = maxLength;
+            }
+            lines.add(desc.substring(0, splitIndex));
+            desc = desc.substring(splitIndex).trim();
+        }
+        lines.add(desc);
+        return lines.toArray(new String[0]);
     }
 
     public void newTask(Database db){
@@ -207,13 +229,22 @@ class Task {
             }
         }
     }
-}
 
-class RecurringTask extends Task{
-    String recurrence;
+    public void deleteTask(ArrayList<Task> tasks,Database db){
+        System.out.println(ANSI_YELLOW + "\n=== Delete Task ===" + ANSI_RESET);
+        System.out.print("Enter the task number you want to delete: ");
+        int target = input.nextInt();
+        input.nextLine();
 
-    public RecurringTask(int taskID, String title, String desc, String status, String dueDate, String category, String priority, String recurrence){
-        super(taskID,title,desc,status,dueDate,category,priority);
-        this.recurrence = recurrence;
+        for(Task task : tasks){
+            if(task.taskID == target){
+                int update = db.deleteTask(target);
+                if(update >= 1){
+                    System.out.println(ANSI_GREEN + "Task \"" + task.title + "\" was deleted successfully!\n" + ANSI_RESET);
+                }else{
+                    System.out.println(ANSI_RED + "Failed to delete task\n" + ANSI_RESET);
+                }
+            }
+        }
     }
 }

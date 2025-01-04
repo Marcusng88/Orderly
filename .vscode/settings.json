@@ -2,5 +2,7 @@
     "java.project.referencedLibraries": [
         "lib/**/*.jar",
         "src/lib/json-20240303-javadoc.jar"
-    ]
+    ],
+    "java.project.sourcePaths": ["src"],
+    "java.project.outputPath": "build/classes"
 }

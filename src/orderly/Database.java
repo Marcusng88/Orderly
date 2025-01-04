@@ -66,4 +66,17 @@ public class Database {
             return 0;
         }
     }
+
+    public int deleteTask(int target){
+        try {
+            Connection db = DriverManager.getConnection("jdbc:mysql://localhost:3306/todolist","root","fop2024");
+            String query = "DELETE FROM tasks WHERE id = ?";
+            PreparedStatement stmt = db.prepareStatement(query);
+            stmt.setInt(1, target);
+            return stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("SQL Error: " + e.getMessage());
+            return 0;
+        }
+    }
 }
