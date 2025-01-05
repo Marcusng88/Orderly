@@ -4,6 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 
 import com.google.gson.Gson;
+import com.mysql.cj.protocol.Resultset;
 
 public class Database {
     public Connection db;
@@ -45,7 +46,7 @@ public class Database {
                         result.getString("category"), 
                         result.getString("priority"),
                         result.getString("dependencies"));
-                    
+
                     tasks.add(task);
                 }
             }
@@ -55,6 +56,36 @@ public class Database {
         }
 
         return tasks;
+    }
+    public ArrayList<Task> readAllData(){
+        ArrayList<Task> tasksForSorting = new ArrayList<>();
+
+        try {
+            Statement stmt = db.createStatement();
+            ResultSet result = stmt.executeQuery("SELECT * from tasks");
+
+            while(result.next()){
+                Task task = new Task(
+                result.getInt("id"), 
+                result.getString("title"), 
+                result.getString("description"), 
+                result.getString("status"), 
+                result.getString("due_date"), 
+                result.getString("category"), 
+                result.getString("priority"));
+                result.getString("recurrence_interval");
+                result.getString("dependencies");
+                result.getString("vector");
+
+
+                tasksForSorting.add(task);
+            }
+           
+        }catch (SQLException e) {
+            System.out.println("SQL Error: " + e.getMessage());
+        }
+
+        return tasksForSorting;
     }
 
     public int insertTask(String title,String desc,String dueDate,String category,String priority){
@@ -140,6 +171,44 @@ public class Database {
             stmt.setInt(1, target);
             return stmt.executeUpdate();
         } catch (SQLException e) {
+            System.out.println("SQL Error: " + e.getMessage());
+            return 0;
+        }
+    }
+    public int updateAfterSort(ArrayList<Task> data){
+        try{
+            String selectQuery = "SELECT id FROM tasks";
+            PreparedStatement pstmt = db.prepareStatement(selectQuery);
+            ResultSet idColumn = pstmt.executeQuery();
+            ArrayList<Integer> idList = new ArrayList<>();
+            while(idColumn.next()){
+                int res = idColumn.getInt("id");
+                idList.add(res);
+            }
+
+            String update = "UPDATE tasks SET title=? , description=? , status=? , due_date=? , category=? , priority=? , recurrence_interval=? , dependencies=? , vector=? WHERE id=? ";
+            PreparedStatement stmt = db.prepareStatement(update);
+            
+            for (int i = 0; i < data.size() ; i++) {
+                
+                
+                stmt.setString(1, data.get(i).title);
+                stmt.setString(2, data.get(i).desc);
+                stmt.setString(3, data.get(i).status);
+                stmt.setString(4, data.get(i).dueDate);
+                stmt.setString(5, data.get(i).category);
+                stmt.setString(6, data.get(i).priority);
+                stmt.setString(7, data.get(i).recurrenceInterval);
+                stmt.setString(8, data.get(i).dependencies);
+                stmt.setString(9,data.get(i).vector);
+                stmt.setInt(10, idList.get(i)); 
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
+            return 1;
+
+            
+        }catch(SQLException e){
             System.out.println("SQL Error: " + e.getMessage());
             return 0;
         }

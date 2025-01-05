@@ -20,7 +20,7 @@ public class Orderly {
 
     public static Scanner input = new Scanner(System.in);
     static ArrayList<Task> tasks = new ArrayList<>();
-
+    static ArrayList<Task> tasksForSorting = new ArrayList<>();
     // Create database object to set connection
     public static Database todolist = new Database();
 
@@ -30,6 +30,7 @@ public class Orderly {
         while (true) { 
             // Fill tasks arraylist with database data
             tasks = todolist.readAll();
+            tasksForSorting = todolist.readAllData();
             Task manager = new Task();
             DependencyTask dependencyManager = new DependencyTask();
 
@@ -75,7 +76,7 @@ public class Orderly {
                 }
                 case 5 -> manager.deleteTask(tasks, todolist);
                 case 6 -> System.out.println(); // recurrence task
-                case 7 -> System.out.println(); // sort task
+                case 7 -> manager.sortTask(tasksForSorting,todolist); // sort task
                 case 8 -> manager.searchTask(tasks,todolist); // normal search
                 case 9 -> manager.searchTasksVector(tasks,todolist); // vector search
                 case 10 -> {

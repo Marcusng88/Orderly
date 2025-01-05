@@ -12,7 +12,7 @@ import java.util.Scanner;
 
 public class Task {
     int taskID;
-    String title,desc,status,dueDate,category,priority;
+    String title,desc,status,dueDate,category,priority,recurrenceInterval,dependencies,vector;
     public Scanner input = new Scanner(System.in);
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED = "\u001B[31m";
@@ -26,6 +26,9 @@ public class Task {
     public Task(){}
 
     public Task(int taskID, String title, String desc, String status, String dueDate, String category, String priority) {
+         this(taskID, title,  desc,  status,  dueDate,  category,  priority,null,null,null);
+    }
+    public Task(int taskID, String title, String desc, String status, String dueDate, String category, String priority, String recurrenceInterval,String dependencies,String vector ){
         this.taskID = taskID;
         this.title = title;
         this.desc = desc;
@@ -33,6 +36,9 @@ public class Task {
         this.dueDate = dueDate;
         this.category = category;
         this.priority = priority;
+        this.recurrenceInterval = recurrenceInterval;
+        this.dependencies = dependencies;
+        this.vector = vector;
     }
 
     public void viewAll(ArrayList<Task> tasks){
@@ -87,6 +93,7 @@ public class Task {
         return lines.toArray(new String[0]);
     }
 
+    //add new task
     public void newTask(Database db){
         System.out.println(ANSI_CYAN + "\n=== Add a New Task ===" + ANSI_RESET);
         System.out.print("Enter Task Title                              : ");
@@ -127,6 +134,37 @@ public class Task {
             return false;
         }
     }
+
+    // sort task
+    public void sortTask(ArrayList<Task> tasks,Database db){
+       
+        TaskSorterMain res = new TaskSorterMain(tasks);
+        
+        ArrayList<Task> newDataToUpdate = res.sortTasks();
+        int update = db.updateAfterSort(newDataToUpdate);
+        if(update>=1){
+            switch(res.getChoice()){
+                case 1:
+                    System.out.println("Tasks sorted by due date (Ascending)");
+                    break;
+                case 2:
+                    System.out.println("Tasks sorted by due date (Descending)");
+                    break;
+                case 3:
+                    System.out.println("Tasks sorted by priority (High to Low)");
+                    break;
+                case 4:
+                    System.out.println("Tasks sorted by priority (Low to high)");
+                    break;
+            }
+
+        }
+        else{
+            System.out.println(ANSI_RED+"Your tasks cannot be sorted .Please try again"+ANSI_RESET);
+        }
+    }
+
+    // normal task searching
     public void searchTask(ArrayList<Task> tasks,Database db){
         ArrayList<Task> allWork = db.readAll();
 
@@ -149,6 +187,7 @@ public class Task {
 
     }
 
+    // vector search task
     public void searchTasksVector(ArrayList<Task> tasks,Database db){
         System.out.println(ANSI_YELLOW+"=== Search Tasks ==="+ANSI_RESET);
         System.out.print("Enter a keyword or phrase to search tasks: "+ANSI_RESET);
@@ -362,6 +401,7 @@ public class Task {
         }
     }
 
+    // task deletion
     public void deleteTask(ArrayList<Task> tasks,Database db){
         System.out.println(ANSI_YELLOW + "\n=== Delete Task ===" + ANSI_RESET);
         System.out.print("Enter the task number you want to delete: ");

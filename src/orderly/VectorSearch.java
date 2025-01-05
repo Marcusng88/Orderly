@@ -12,7 +12,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
@@ -34,7 +33,7 @@ public class VectorSearch {
     public static double[] getEmbeddings(String sentence) {
         try {
             // API Endpoint for the Python Flask server or Hugging Face hosted model
-            String endpoint = "http://localhost:5000/get_embeddings"; // Replace with your Hugging Face URL if applicable
+            String endpoint = "http://localhost:5000/get_embeddings"; 
 
             // Dynamically insert the sentence into the JSON payload
             String sentencesJson = String.format(
@@ -125,14 +124,6 @@ public class VectorSearch {
             return results;
         }
         
-        // //put the url for the database here
-        // String url = "jdbc:mysql://localhost:3306/todolist";
-        // // database username here
-        // String user = "root";
-        // // database password here;
-        // String password = "755788";
-
-        //this also need modification,depends on the table created(just for temporary)
         String sql = "SELECT * FROM tasks";
 
         try (Connection conn = DriverManager.getConnection(url, user, password);
@@ -150,9 +141,7 @@ public class VectorSearch {
                     String category = rs.getString("category");
                     String status = rs.getString("status");
                     String embeddingString = rs.getString("vector");
-                    //Arrays.stream converts the array of strings into stream of strings.Stream is sequence of elements that can be processed parallel
-                    // the split (",") is to split the embedding e.g "0.1,0.2,0.3" into "0.1" "0.2" "0.3"
-                    //.mapToDouble(Double::parseDouble) convert each string of a number into an actual double
+
 
                     
                     double[] taskEmbedding = gson.fromJson(embeddingString,double[].class);
