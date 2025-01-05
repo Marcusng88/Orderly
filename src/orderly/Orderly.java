@@ -33,6 +33,7 @@ public class Orderly {
             Task manager = new Task();
             DependencyTask dependencyManager = new DependencyTask();
             RecurringTask recurringManager = new RecurringTask();
+            Analytics dashboard = new Analytics();
 
             // Display menu ; Prompt user for action
             int action = mainMenu();
@@ -94,7 +95,8 @@ public class Orderly {
 
                 case 6 -> manager.deleteTask(tasks, todolist);
                 case 7 -> manager.searchTasks(tasks,todolist);
-                case 8 -> {
+                case 8 -> dashboard.analyzer(tasks);
+                case 9 -> {
                     System.out.println(ANSI_RED + "Exiting Orderly..." + ANSI_RESET);
                     break mainMenu;
                 }
@@ -114,7 +116,8 @@ public class Orderly {
         System.out.println("5. Edit a Task");
         System.out.println("6. Delete a Task");
         System.out.println("7. Search a Task");
-        System.out.println("8. Exit Program");
+        System.out.println("8. Show Analytics Dashboard");
+        System.out.println("9. Exit Program");
         System.out.print(ANSI_PURPLE + "Choose a task >> " + ANSI_YELLOW);
 
         return input.nextInt();
