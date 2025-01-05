@@ -5,12 +5,13 @@ import java.util.ArrayList;
 
 import com.google.gson.Gson;
 
+
 public class Database {
     public Connection db;
 
     public Database(){
         try {
-            db = DriverManager.getConnection("jdbc:mysql://localhost:3306/todolist","root","fop2024");
+            db = DriverManager.getConnection("jdbc:mysql://localhost:3306/todolist","root","755788");
         } catch (SQLException e) {
             System.out.println("SQL Error: " + e.getMessage());
         }
@@ -98,6 +99,7 @@ public class Database {
             System.out.println("SQL Error: " + e.getMessage());
             return 0;
         }
+        
     }
 
     public int insertRecurring(String title,String desc,String dueDate,String category,String priority,String recurrence){
@@ -125,6 +127,7 @@ public class Database {
             return 0;
         }
     }
+
 
     public int updateTask(int target,String field,String newData){
         try {
@@ -154,7 +157,7 @@ public class Database {
 
             // Combine title and description to form the new sentence
             String newSentence = title + " " + desc;
-            
+
             // regenerate the vector for modified description or title
             double[] newEmbeddings = VectorSearch.getEmbeddings(newSentence);
             Gson gson = new Gson();
@@ -186,4 +189,89 @@ public class Database {
             return 0;
         }
     }
+    public int updateAfterSort(ArrayList<Task> data){
+        try{
+            String selectQuery = "SELECT id FROM tasks";
+            PreparedStatement pstmt = db.prepareStatement(selectQuery);
+            ResultSet idColumn = pstmt.executeQuery();
+            ArrayList<Integer> idList = new ArrayList<>();
+            while(idColumn.next()){
+                int res = idColumn.getInt("id");
+                idList.add(res);
+            }
+            int i = 0;
+            for(Task task : data){
+                // current row got recurrenceInternal
+                if(task instanceof RecurringTask){
+                    String update = "UPDATE tasks SET title=? , description=? , status=? , due_date=? , category=? , priority=? , recurrence_interval=?  , vector=? WHERE id=? ";
+                    PreparedStatement stmt = db.prepareStatement(update);
+                    RecurringTask recurringTask = (RecurringTask) task;
+ 
+                    stmt.setString(1, recurringTask.title);
+                    stmt.setString(2, recurringTask.desc);
+                    stmt.setString(3, recurringTask.status);
+                    stmt.setString(4, recurringTask.dueDate);
+                    stmt.setString(5, recurringTask.category);
+                    stmt.setString(6, recurringTask.priority);
+                    stmt.setString(7, recurringTask.recurrence);
+                    stmt.setString(8,recurringTask.vector);
+                    
+                    stmt.setInt(9, idList.get(i)); 
+                    i++;
+                    stmt.addBatch();
+                    
+                    stmt.executeBatch();
+                }
+                // current row got dependencies
+                else if(task instanceof DependencyTask){
+                    String update = "UPDATE tasks SET title=? , description=? , status=? , due_date=? , category=? , priority=? , dependencies=? , vector=? WHERE id=? ";
+                    PreparedStatement stmt = db.prepareStatement(update);
+                    DependencyTask dependencyTask = (DependencyTask) task;
+ 
+                    stmt.setString(1, dependencyTask.title);
+                    stmt.setString(2, dependencyTask.desc);
+                    stmt.setString(3, dependencyTask.status);
+                    stmt.setString(4, dependencyTask.dueDate);
+                    stmt.setString(5, dependencyTask.category);
+                    stmt.setString(6, dependencyTask.priority);
+                    stmt.setString(7, dependencyTask.dependency);
+                    stmt.setString(8,dependencyTask.vector);
+                    
+                    stmt.setInt(9, idList.get(i)); 
+                    i++;
+                    stmt.addBatch();
+                    
+                    stmt.executeBatch();
+                }
+                // current row dont have recurrenceInterval and dependency
+                else {
+                    String update = "UPDATE tasks SET title=? , description=? , status=? , due_date=? , category=? , priority=? , vector=? WHERE id=? ";
+                    PreparedStatement stmt = db.prepareStatement(update);
+
+ 
+                    stmt.setString(1, task.title);
+                    stmt.setString(2, task.desc);
+                    stmt.setString(3, task.status);
+                    stmt.setString(4, task.dueDate);
+                    stmt.setString(5, task.category);
+                    stmt.setString(6, task.priority);
+                    stmt.setString(7,task.vector);
+                    
+                    stmt.setInt(8, idList.get(i)); 
+                    i++;
+                    stmt.addBatch();
+                    
+                    stmt.executeBatch();
+                }
+    
+            }
+            return 1;
+
+            
+        }catch(SQLException e){
+            System.out.println("SQL Error: " + e.getMessage());
+            return 0;
+        }
+    }
+    
 }

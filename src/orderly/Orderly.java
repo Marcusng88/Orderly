@@ -20,7 +20,7 @@ public class Orderly {
 
     public static Scanner input = new Scanner(System.in);
     static ArrayList<Task> tasks = new ArrayList<>();
-
+    static ArrayList<Task> tasksForSorting = new ArrayList<>();
     // Create database object to set connection
     public static Database todolist = new Database();
 
@@ -36,7 +36,7 @@ public class Orderly {
             Analytics dashboard = new Analytics();
 
             // Display menu ; Prompt user for action
-            int action = mainMenu();
+            int action = mainMenu();           
             input.nextLine();
             switch (action) {
                 case 1 -> manager.viewAll(tasks);
@@ -94,9 +94,11 @@ public class Orderly {
                 }
 
                 case 6 -> manager.deleteTask(tasks, todolist);
-                case 7 -> manager.searchTasks(tasks,todolist);
-                case 8 -> dashboard.analyzer(tasks);
-                case 9 -> {
+                case 7 -> manager.searchTask(tasks,todolist);
+                case 8 -> manager.searchTasksVector(tasks, todolist);
+                case 9 -> manager.sortTask(tasks, todolist);
+                case 10 -> dashboard.analyzer(tasks);
+                case 11 -> {
                     System.out.println(ANSI_RED + "Exiting Orderly..." + ANSI_RESET);
                     break mainMenu;
                 }
@@ -109,15 +111,17 @@ public class Orderly {
     private static int mainMenu(){
         System.out.println(ANSI_YELLOW + "\n=== Welcome to Orderly ===" + ANSI_RESET);
         System.out.println("What would you like to do?");
-        System.out.println("1. View Tasks");
-        System.out.println("2. Add a New Task");
-        System.out.println("3. Manage a Task");
-        System.out.println("4. Manage Recurring Tasks");
-        System.out.println("5. Edit a Task");
-        System.out.println("6. Delete a Task");
-        System.out.println("7. Search a Task");
-        System.out.println("8. Show Analytics Dashboard");
-        System.out.println("9. Exit Program");
+        System.out.println("1.  View Tasks");
+        System.out.println("2.  Add a New Task");
+        System.out.println("3.  Manage a Task");
+        System.out.println("4.  Manage Recurring Tasks");
+        System.out.println("5.  Edit a Task");
+        System.out.println("6.  Delete a Task");
+        System.out.println("7.  Search a Task");
+        System.out.println("8.  Search a task (similarity search)");
+        System.out.println("9.  Sort task");
+        System.out.println("10. Show Analytics Dashboard");
+        System.out.println("11. Exit Program");
         System.out.print(ANSI_PURPLE + "Choose a task >> " + ANSI_YELLOW);
 
         return input.nextInt();

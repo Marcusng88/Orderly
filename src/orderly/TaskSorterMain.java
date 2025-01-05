@@ -1,124 +1,148 @@
 package orderly;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
+import java.time.LocalDate;
 
 class TaskSorter {
-    private String nameTask;
-    private Date dueDate;
-    private int priorityTask;
 
-    public TaskSorter(String nameTask, Date dueDate, int priorityTask) {
-        this.nameTask = nameTask;
-        this.dueDate = dueDate;
-        this.priorityTask = priorityTask;
+    private ArrayList<Task> data;
+    private int size;
+
+    public TaskSorter(ArrayList<Task> allData) {
+        this.data = allData;
+        this.size = allData.size();
     }
-
-    public String getNameTask() {
-        return nameTask;
-    }
-
-    public Date getDueDate() {
-        return dueDate;
-    }
-
-    public int getPriorityTask() {
-        return priorityTask;
-    }
-
-    @Override
-    public String toString() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        return "\n===Task Details===\n" +
-                "Name: " + nameTask + "\n" +
-                "Due Date: " + sdf.format(dueDate) + "\n" +
-                "Priority: " + priorityTask;
-    }
-}
-
-class TaskSorting {
-    public static void dateSortingAlgorithm(List<TaskSorter> tasks, boolean ascending) {
-        tasks.sort((t1, t2) -> ascending ? t1.getDueDate().compareTo(t2.getDueDate())
-                                         : t2.getDueDate().compareTo(t1.getDueDate()));
-    }
-
-    public static void prioritySortingAlgorithm(List<TaskSorter> tasks, boolean highToLow) {
-        tasks.sort((t1, t2) -> highToLow ? Integer.compare(t2.getPriorityTask(), t1.getPriorityTask())
-                                         : Integer.compare(t1.getPriorityTask(), t2.getPriorityTask()));
-    }
-}
-
-// Main method to test the functionality of the program
- public class TaskSorterMain {
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        List<TaskSorter> tasks = new ArrayList<>();
-
-        System.out.print("Enter the number of tasks: ");
-        int numOfTasks = scanner.nextInt();
-        scanner.nextLine();
-
-        for (int i = 0; i < numOfTasks; i++) {
-            System.out.print("Enter task name: ");
-            String nameTask = scanner.nextLine();
-
-            System.out.print("Enter due date (yyyy-MM-dd): ");
-            String dateInput = scanner.nextLine();
-            Date dueDate;
-            try {
-                dueDate = sdf.parse(dateInput);
-            } catch (ParseException e) {
-                System.out.println("Invalid date format. Please try again.");
-                i--;
-                continue;
+    public ArrayList<Task> byDueDate(ArrayList<Task> data,boolean ascending){
+        if (ascending){
+            // ascending due date
+            // earliest to latest
+            for (int i=0;i<size;i++){
+                for(int j = 0 ;j<size-1;j++){
+                    LocalDate first = LocalDate.parse(data.get(j).dueDate);
+                    LocalDate second = LocalDate.parse(data.get(j+1).dueDate);
+                    if(first.isAfter(second)){
+                        Task temp = data.get(j+1);
+                        data.set(j+1,data.get(j));
+                        data.set(j,temp);
+                    }
+                }
             }
-
-            System.out.print("Enter priority (1 to 10, where 10 is the highest priority): ");
-            int priorityTask = scanner.nextInt();
-            scanner.nextLine();
-
-            tasks.add(new TaskSorter(nameTask, dueDate, priorityTask));
+            return data;
         }
+        else{
+            // descending due date
+            // latest to earliest
+            for(int i=0;i<size;i++){
+                for(int j = 0 ;j<size-1;j++){
+                    LocalDate first = LocalDate.parse(data.get(j).dueDate);
+                    LocalDate second = LocalDate.parse(data.get(j+1).dueDate);
+                    if(first.isBefore(second)){
+                        Task temp = data.get(j+1);
+                        data.set(j+1,data.get(j));
+                        data.set(j,temp);
+                    }
+                }
+  
+            }
+            return data;
+        }
+    }
+    public  ArrayList<Task> byPriority(ArrayList<Task> data,boolean ascending){
+        if(ascending){
+            // ascending priority 
+            // low to high 
+            Collections.sort(data, new Comparator<Task>() {
+                @Override
+                public int compare(Task d1,Task d2){
+                    // -1 means d1 comes before d2
+                    // 1 means d2 comes before d1
+                    // 0 means no change
+                    if(d1.priority.equals("Low") && !d2.priority.equals("Low")) return -1;
+                    if(d2.priority.equals("Low") && !d1.priority.equals("Low")) return 1;
+                    
+                    if(d1.priority.equals("Medium") && !d2.priority.equals("Medium")) return -1;
+                    if(d2.priority.equals("Medium") && !d1.priority.equals("Medium")) return 1;
 
+                    return 0;
+                }
+            });
+            return data;
+        }
+        else{
+            // descending priority
+            // high to low
+            Collections.sort(data, new Comparator<Task>() {
+                @Override
+                public int compare(Task d1,Task d2){
+                    if(d1.priority.equals("High") && !d2.priority.equals("High")) return -1;
+                    if(d2.priority.equals("High") && !d1.priority.equals("High")) return 1;
+                    
+                    if(d1.priority.equals("Medium") && !d2.priority.equals("Medium")) return -1;
+                    if(d2.priority.equals("Medium") && !d1.priority.equals("Medium")) return 1;
+
+                    return 0;
+                }
+            });
+            return data;
+        }
+    }
+
+}
+
+
+
+ public class TaskSorterMain {
+
+    private  ArrayList<Task> data;
+    private  ArrayList<Task> newData;
+    private  int choice ;
+    public TaskSorterMain(ArrayList<Task> allData) {
+        this.data = allData;
+        this.newData = new ArrayList<Task>();
+    }
+    public ArrayList<Task> getNewData(){
+        return newData;
+    }
+    public int getChoice(){
+        return this.choice;
+    }
+    public ArrayList<Task> sortTasks(){
+        Scanner scanner = new Scanner(System.in);
+        outer:
         while (true) {
-            System.out.println("\n=== Sort Tasks ===");
+            System.out.println("\n=== Sort Tasks ==="+Orderly.ANSI_RESET);
             System.out.println("1. Ascending Order (Due Date)");
             System.out.println("2. Descending Order (Due Date)");
             System.out.println("3. Priority (High to Low)");
             System.out.println("4. Priority (Low to High)");
             System.out.println("5. Exit");
-
-            int choice = scanner.nextInt();
+            TaskSorter x = new TaskSorter(this.data);
+            choice = scanner.nextInt();
             switch (choice) {
                 case 1:
-                    TaskSorting.dateSortingAlgorithm(tasks, true);
-                    System.out.println("\nAfter Sorting (Ascending by Due Date):");
-                    tasks.forEach(System.out::println);
-                    break;
+                    this.newData = x.byDueDate( data,true);
+
+                    break outer;
                 case 2:
-                    TaskSorting.dateSortingAlgorithm(tasks, false);
-                    System.out.println("\nAfter Sorting (Descending by Due Date):");
-                    tasks.forEach(System.out::println);
-                    break;
+                    this.newData = x.byDueDate( data,false);
+                    
+                    break outer;
                 case 3:
-                    TaskSorting.prioritySortingAlgorithm(tasks, true);
-                    System.out.println("\nAfter Sorting (High to Low by Priority):");
-                    tasks.forEach(System.out::println);
-                    break;
+                    this.newData = x.byPriority(data, false);
+                    
+                    break outer;
                 case 4:
-                    TaskSorting.prioritySortingAlgorithm(tasks, false);
-                    System.out.println("\nAfter Sorting (Low to High by Priority):");
-                    tasks.forEach(System.out::println);
-                    break;
+                    this.newData = x.byPriority(data, true);
+                    
+                    
+                    break outer;
                 case 5:
-                    System.out.println("Exiting the program!");
-                    scanner.close();
-                    return;
+                    break outer;
                 default:
                     System.out.println("Invalid choice. Please enter a number between 1 and 5.");
             }
+            scanner.close();
         }
+        return this.newData;
     }
 }

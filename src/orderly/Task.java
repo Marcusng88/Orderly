@@ -25,7 +25,7 @@ public class Task {
 
     public Task(){}
 
-    public Task(int taskID, String title, String desc, String status, String dueDate, String category, String priority, String vector) {
+    public Task(int taskID, String title, String desc, String status, String dueDate, String category, String priority,String vector) {
         this.taskID = taskID;
         this.title = title;
         this.desc = desc;
@@ -34,6 +34,7 @@ public class Task {
         this.category = category;
         this.priority = priority;
         this.vector = vector;
+        
     }
 
     public void viewAll(ArrayList<Task> tasks) {
@@ -109,6 +110,7 @@ public class Task {
         return recurrence != null ? recurrence : "None";
     }
 
+    //add new task
     public void newTask(Database db){
         System.out.println(ANSI_CYAN + "\n=== Add a New Task ===" + ANSI_RESET);
         System.out.print("Enter Task Title                              : ");
@@ -150,9 +152,63 @@ public class Task {
         }
     }
 
-    public void searchTasks(ArrayList<Task> tasks,Database db){
+    // sort task
+    public void sortTask(ArrayList<Task> tasks,Database db){
+       
+        TaskSorterMain res = new TaskSorterMain(tasks);
+        
+        ArrayList<Task> newDataToUpdate = res.sortTasks();
+        int update = db.updateAfterSort(newDataToUpdate);
+        int c = res.getChoice();
+        if(update>=1){
+            switch(c){
+                case 1:
+                    System.out.println("Tasks sorted by due date (Ascending)");
+                    break;
+                case 2:
+                    System.out.println("Tasks sorted by due date (Descending)");
+                    break;
+                case 3:
+                    System.out.println("Tasks sorted by priority (High to Low)");
+                    break;
+                case 4:
+                    System.out.println("Tasks sorted by priority (Low to high)");
+                    break;
+            }
+
+        }
+        else{
+            System.out.println(ANSI_RED+"Your tasks cannot be sorted .Please try again"+ANSI_RESET);
+        }
+    }
+
+    // normal task searching
+    public void searchTask(ArrayList<Task> tasks,Database db){
+        ArrayList<Task> allWork = db.readAll();
+
+        System.out.println(ANSI_GREEN+"=== Search Tasks ==="+ANSI_RESET);
+        System.out.print("Enter a keyword to search by title or description: ");
+        String keyword = input.nextLine();
+
+        ArrayList<Task> res = SearchingTask.searchTasks(allWork, keyword);
+        if (res.isEmpty()){
+            System.out.println("No task found");
+        }
+        else{
+            for(Task element: res){
+                Searching result =new Searching(element.title,element.dueDate,element.category,element.priority,element.status);
+                String x = result.toString();
+                System.out.println(x);
+            }
+        }
+
+
+    }
+
+    // vector search task
+    public void searchTasksVector(ArrayList<Task> tasks,Database db){
         System.out.println(ANSI_YELLOW+"=== Search Tasks ==="+ANSI_RESET);
-        System.out.print("Enter a keyword or phrase to search tasks: assignment : "+ANSI_RESET);
+        System.out.print("Enter a keyword or phrase to search tasks: "+ANSI_RESET);
         String keyword = input.nextLine();
         
         List<String> res = VectorSearch.searchTasks(keyword);
@@ -238,23 +294,6 @@ public class Task {
         }
     }
 
-    //public void setCompletion(ArrayList<Task> tasks,Database db){
-    //    System.out.println(ANSI_YELLOW + "\n=== Mark Task Completion ===" + ANSI_RESET);
-    //    System.out.print("Enter the task number you want to mark as complete: ");
-    //    int target = input.nextInt();
-    //    input.nextLine();
-        
-    //    for(Task task : tasks){
-    //        if(task.taskID == target){
-    //            int update = db.updateTask(target, "status", "Complete");
-    //            if(update >= 1){
-    //                System.out.println(ANSI_GREEN + "Task \"" + task.title + "\" marked as complete!\n" + ANSI_RESET);
-    //            }else{
-    //                System.out.println(ANSI_RED + "Failed to update task completion\n" + ANSI_RESET);
-    //            }
-    //        }
-    //    }
-    //}
 
     public void setTitle(ArrayList<Task> tasks,Database db){
         System.out.println(ANSI_YELLOW + "\n=== Change Task Title ===" + ANSI_RESET);
@@ -363,6 +402,7 @@ public class Task {
         }
     }
 
+    // task deletion
     public void deleteTask(ArrayList<Task> tasks,Database db){
         System.out.println(ANSI_YELLOW + "\n=== Delete Task ===" + ANSI_RESET);
         System.out.print("Enter the task number you want to delete: ");

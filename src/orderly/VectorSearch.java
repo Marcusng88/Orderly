@@ -12,7 +12,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
@@ -28,13 +27,13 @@ public class VectorSearch {
     // database username here
     private static String user = "root";
     // database password here;
-    private static String password = "fop2024";
+    private static String password = "755788";
 
     // this will generate vectors embedding for the task title,it will return a double array
     public static double[] getEmbeddings(String sentence) {
         try {
             // API Endpoint for the Python Flask server or Hugging Face hosted model
-            String endpoint = "http://localhost:5000/get_embeddings"; // Replace with your Hugging Face URL if applicable
+            String endpoint = "http://localhost:5000/get_embeddings"; 
 
             // Dynamically insert the sentence into the JSON payload
             String sentencesJson = String.format(
@@ -84,23 +83,6 @@ public class VectorSearch {
             e.printStackTrace();
             return null; // Return null if there's an error
         }
-    }
-    public static void updateEmbeddings(int taskId,double[] embeddings){
-        String sql = "UPDATE tasks SET vector = ? where id = ?";
-
-        try (Connection conn = DriverManager.getConnection(url,user,password);
-            PreparedStatement pstmt = conn.prepareStatement(sql)){
-
-                Gson gson = new Gson();
-                String embeddingString = gson.toJson(embeddings);
-
-                pstmt.setString(1, embeddingString);
-                pstmt.setInt(2,taskId);
-
-                pstmt.executeUpdate();
-            } catch(SQLException e){
-                System.out.println(e.getMessage());
-            }
     }
     
     //this will calculate the similarity of the two vectors(similarity between two sentences)
