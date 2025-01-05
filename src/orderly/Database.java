@@ -10,7 +10,7 @@ public class Database {
 
     public Database(){
         try {
-            db = DriverManager.getConnection("jdbc:mysql://localhost:3306/todolist","root","755788");
+            db = DriverManager.getConnection("jdbc:mysql://localhost:3306/todolist","root","fop2024");
         } catch (SQLException e) {
             System.out.println("SQL Error: " + e.getMessage());
         }
@@ -24,28 +24,45 @@ public class Database {
             ResultSet result = stmt.executeQuery("select * from tasks");
 
             while(result.next()){
-                if(result.getString("dependencies") == null){
-                    Task task = new Task(
-                        result.getInt("id"), 
-                        result.getString("title"), 
-                        result.getString("description"), 
-                        result.getString("status"), 
-                        result.getString("due_date"), 
-                        result.getString("category"), 
-                        result.getString("priority"));
-    
-                    tasks.add(task);
-                }else{
-                    DependencyTask task = new DependencyTask(
-                        result.getInt("id"), 
-                        result.getString("title"), 
-                        result.getString("description"), 
-                        result.getString("status"), 
-                        result.getString("due_date"), 
-                        result.getString("category"), 
+                if(result.getString("recurrence_interval") != null){
+                    RecurringTask task = new RecurringTask(
+                        result.getInt("id"),
+                        result.getString("title"),
+                        result.getString("description"),
+                        result.getString("status"),
+                        result.getString("due_date"),
+                        result.getString("category"),
                         result.getString("priority"),
-                        result.getString("dependencies"));
-                    
+                        result.getString("recurrence_interval"),
+                        result.getString("vector"));
+                        
+                    tasks.add(task);
+                }
+                else if(result.getString("dependencies") != null){
+                    DependencyTask task = new DependencyTask(
+                            result.getInt("id"),
+                            result.getString("title"),
+                            result.getString("description"),
+                            result.getString("status"),
+                            result.getString("due_date"),
+                            result.getString("category"),
+                            result.getString("priority"),
+                            result.getString("dependencies"),
+                            result.getString("vector"));
+
+                    tasks.add(task);
+
+                }else{
+                    Task task = new Task(
+                            result.getInt("id"),
+                            result.getString("title"),
+                            result.getString("description"),
+                            result.getString("status"),
+                            result.getString("due_date"),
+                            result.getString("category"),
+                            result.getString("priority"),
+                            result.getString("vector"));
+
                     tasks.add(task);
                 }
             }
@@ -75,6 +92,32 @@ public class Database {
             stmt.setString(4, category);
             stmt.setString(5, priority);
             stmt.setString(6, embeddingString);
+            return stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("SQL Error: " + e.getMessage());
+            return 0;
+        }
+    }
+
+    public int insertRecurring(String title,String desc,String dueDate,String category,String priority,String recurrence){
+        try{
+            // combine title and description to a sentence and use it to generate vector embedding
+            String sentence = title + " " + desc;
+            double[] embedding = VectorSearch.getEmbeddings(sentence);
+            Gson gson = new Gson();
+            // convert vectors into json string
+            String embeddingString = gson.toJson(embedding);
+
+            String query = "INSERT INTO tasks (title, description, due_date, category, priority, recurrence_interval, vector) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement stmt = db.prepareStatement(query);
+            stmt.setString(1, title);
+            stmt.setString(2, desc);
+            stmt.setString(3, dueDate);
+            stmt.setString(4, category);
+            stmt.setString(5, priority);
+            stmt.setString(6, recurrence);
+            stmt.setString(7, embeddingString);
             return stmt.executeUpdate();
 
         } catch (SQLException e) {

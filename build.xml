@@ -7,18 +7,52 @@
 <!-- the Compile on Save feature is turned off for the project. -->
 <!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
 <!-- in the project's Project Properties dialog box.-->
-<project name="Orderly" default="default" basedir=".">
-    <description>Builds, tests, and runs the project Orderly.</description>
-    <import file="nbproject/build-impl.xml"/>
-    <path id="classpath">
-    <fileset dir="lib">
-        <include name="*.jar"/>
-    </fileset>
-</path>
+<project name="Orderly" default="run" basedir=".">
+    <description>
+        Build and run the Orderly project.
+    </description>
 
-<target name="compile" depends="init">
-    <javac srcdir="src" destdir="build" classpathref="classpath"/>
-</target>
+    <!-- Set global properties for this build -->
+    <property name="src.dir" value="src"/>
+    <property name="build.dir" value="build"/>
+    <property name="dist.dir" value="dist"/>
+    <property name="lib.dir" value="lib"/>
+
+    <!-- Create directories for build and distribution -->
+    <target name="init">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+    </target>
+
+    <!-- Compile the source code -->
+    <target name="compile" depends="init">
+        <javac srcdir="${src.dir}" destdir="${build.dir}">
+            <classpath>
+                <fileset dir="${lib.dir}">
+                    <include name="/*.jar"/>
+                </fileset>
+            </classpath>
+        </javac>
+    </target>
+
+    <!-- Run the Java application -->
+    <target name="run" depends="compile">
+        <java classname="orderly.VectorSearch" fork="true">
+            <classpath>
+                <path path="${build.dir}"/>
+                <fileset dir="${lib.dir}">
+                    <include name="/*.jar"/>
+                </fileset>
+            </classpath>
+        </java>
+    </target>
+
+    <!-- Clean the build and distribution directories -->
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+</project>
 
     <!--
 
@@ -80,4 +114,3 @@
     nbproject/build-impl.xml file. 
 
     -->
-</project>

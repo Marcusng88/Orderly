@@ -1,13 +1,13 @@
 {
 
     "java.project.referencedLibraries": [
-        "lib/**/*.jar",
+        "lib\\**\\*.jar",
         "src/lib/json-20240303-javadoc.jar",
         "c:\\Program Files (x86)\\MySQL\\mysql-connector-j-9.1.0\\mysql-connector-j-9.1.0.jar"
     ],
     "java.project.sourcePaths": ["src"],
     "java.project.outputPath": "bin"
 
-
+    
 }
 

@@ -14,13 +14,13 @@ public class DependencyTask extends Task{
 
     public DependencyTask(){}
 
-    public DependencyTask(int taskID, String title, String desc, String status, String dueDate, String category, String priority, String dependency){
-        super(taskID,title,desc,status,dueDate,category,priority);
+    public DependencyTask(int taskID, String title, String desc, String status, String dueDate, String category, String priority, String dependency,String vector){
+        super(taskID,title,desc,status,dueDate,category,priority,vector);
         this.dependency = dependency;
     }
 
     public DependencyTask(Task task){
-        super(task.taskID,task.title,task.desc,task.status,task.dueDate,task.category,task.priority);
+        super(task.taskID,task.title,task.desc,task.status,task.dueDate,task.category,task.priority,task.vector);
     }
 
 

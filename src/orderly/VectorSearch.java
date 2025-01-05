@@ -28,7 +28,7 @@ public class VectorSearch {
     // database username here
     private static String user = "root";
     // database password here;
-    private static String password = "755788";
+    private static String password = "fop2024";
 
     // this will generate vectors embedding for the task title,it will return a double array
     public static double[] getEmbeddings(String sentence) {
@@ -124,15 +124,7 @@ public class VectorSearch {
         if (queryVector==null){
             return results;
         }
-        
-        // //put the url for the database here
-        // String url = "jdbc:mysql://localhost:3306/todolist";
-        // // database username here
-        // String user = "root";
-        // // database password here;
-        // String password = "755788";
 
-        //this also need modification,depends on the table created(just for temporary)
         String sql = "SELECT * FROM tasks";
 
         try (Connection conn = DriverManager.getConnection(url, user, password);
@@ -150,10 +142,6 @@ public class VectorSearch {
                     String category = rs.getString("category");
                     String status = rs.getString("status");
                     String embeddingString = rs.getString("vector");
-                    //Arrays.stream converts the array of strings into stream of strings.Stream is sequence of elements that can be processed parallel
-                    // the split (",") is to split the embedding e.g "0.1,0.2,0.3" into "0.1" "0.2" "0.3"
-                    //.mapToDouble(Double::parseDouble) convert each string of a number into an actual double
-
                     
                     double[] taskEmbedding = gson.fromJson(embeddingString,double[].class);
                     double similarity = cosineSimilarity(queryVector, taskEmbedding);
