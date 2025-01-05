@@ -84,23 +84,6 @@ public class VectorSearch {
             return null; // Return null if there's an error
         }
     }
-    public static void updateEmbeddings(int taskId,double[] embeddings){
-        String sql = "UPDATE tasks SET vector = ? where id = ?";
-
-        try (Connection conn = DriverManager.getConnection(url,user,password);
-            PreparedStatement pstmt = conn.prepareStatement(sql)){
-
-                Gson gson = new Gson();
-                String embeddingString = gson.toJson(embeddings);
-
-                pstmt.setString(1, embeddingString);
-                pstmt.setInt(2,taskId);
-
-                pstmt.executeUpdate();
-            } catch(SQLException e){
-                System.out.println(e.getMessage());
-            }
-    }
     
     //this will calculate the similarity of the two vectors(similarity between two sentences)
     public static double cosineSimilarity(double[] vectorA, double[] vectorB){
@@ -123,7 +106,7 @@ public class VectorSearch {
         if (queryVector==null){
             return results;
         }
-        
+
         String sql = "SELECT * FROM tasks";
 
         try (Connection conn = DriverManager.getConnection(url, user, password);
@@ -141,8 +124,6 @@ public class VectorSearch {
                     String category = rs.getString("category");
                     String status = rs.getString("status");
                     String embeddingString = rs.getString("vector");
-
-
                     
                     double[] taskEmbedding = gson.fromJson(embeddingString,double[].class);
                     double similarity = cosineSimilarity(queryVector, taskEmbedding);

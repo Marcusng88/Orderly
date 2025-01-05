@@ -12,7 +12,7 @@ import java.util.Scanner;
 
 public class Task {
     int taskID;
-    String title,desc,status,dueDate,category,priority,recurrenceInterval,dependencies,vector;
+    String title,desc,status,dueDate,category,priority,vector;
     public Scanner input = new Scanner(System.in);
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED = "\u001B[31m";
@@ -25,10 +25,7 @@ public class Task {
 
     public Task(){}
 
-    public Task(int taskID, String title, String desc, String status, String dueDate, String category, String priority) {
-         this(taskID, title,  desc,  status,  dueDate,  category,  priority,null,null,null);
-    }
-    public Task(int taskID, String title, String desc, String status, String dueDate, String category, String priority, String recurrenceInterval,String dependencies,String vector ){
+    public Task(int taskID, String title, String desc, String status, String dueDate, String category, String priority,String vector) {
         this.taskID = taskID;
         this.title = title;
         this.desc = desc;
@@ -36,50 +33,40 @@ public class Task {
         this.dueDate = dueDate;
         this.category = category;
         this.priority = priority;
-        this.recurrenceInterval = recurrenceInterval;
-        this.dependencies = dependencies;
         this.vector = vector;
+        
     }
 
-    public void viewAll(ArrayList<Task> tasks){
+    public void viewAll(ArrayList<Task> tasks) {
         Database todolist = new Database();
-        System.out.println(ANSI_CYAN + "-------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-        System.out.println("| Task ID | Title                | Description                                          | Status       | Due Date     | Category      | Priority   | Dependencies |");
-        System.out.println("|---------|----------------------|------------------------------------------------------|--------------|--------------|---------------|------------|--------------|");
-        
-        for(Task task : tasks){
-            String[] descLines = splitDescription(task.desc, 52);
-            for (int i = 0; i < descLines.length; i++) {
+        System.out.println(ANSI_CYAN + "--------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        System.out.println("| ID | Title                | Description                                | Status       | Due Date     | Category      | Priority   | Dependencies | Recurrence Interval |");
+        System.out.println("|----|----------------------|--------------------------------------------|--------------|--------------|---------------|------------|--------------|---------------------|");
+
+        for (Task task : tasks) {
+            String[] descLines = splitField(task.desc, 52);
+            String[] titleLines = splitField(task.title, 20);
+            String dependencies = getDependencies(todolist, task.taskID);
+            String recurrence = getRecurrence(todolist, task.taskID);
+
+            int maxLines = Math.max(descLines.length, titleLines.length);
+            for (int i = 0; i < maxLines; i++) {
+                String titleLine = i < titleLines.length ? titleLines[i] : "";
+                String descLine = i < descLines.length ? descLines[i] : "";
+
                 if (i == 0) {
-                    String depSql = "SELECT dependency_id FROM task_dependencies WHERE task_id = ?";
-                    try(PreparedStatement depStmt = todolist.db.prepareStatement(depSql)){
-                        depStmt.setInt(1,task.taskID);
-                        ResultSet depRs = depStmt.executeQuery();
-                        StringBuilder dependencies = new StringBuilder();
-                        while (depRs.next()){
-                            dependencies.append(depRs.getInt("dependency_id")).append(" ");
-                        }
-                        if(dependencies.length() > 0){
-                            System.out.printf("| %-7d | %-20s | %-52s | %-12s | %-12s | %-13s | %-10s | %-12s |\n",
-                            task.taskID, task.title, descLines[i], task.status, task.dueDate, task.category, task.priority, dependencies);
-                        }else{
-                            System.out.printf("| %-7d | %-20s | %-52s | %-12s | %-12s | %-13s | %-10s | %-12s |\n",
-                            task.taskID, task.title, descLines[i], task.status, task.dueDate, task.category, task.priority, "None");
-                        }
-                    } catch (SQLException e){
-                        System.out.println("SQL Error: " + e.getMessage());
-                    }
-                    
+                    System.out.printf("| %-2d | %-20s | %-42s | %-12s | %-12s | %-13s | %-10s | %-12s | %-19s |\n",
+                            task.taskID, titleLine, descLine, task.status, task.dueDate, task.category, task.priority, dependencies, recurrence);
                 } else {
-                    System.out.printf("| %-7s | %-20s | %-52s | %-12s | %-12s | %-13s | %-10s | %-12s |\n",
-                            "", "", descLines[i], "", "", "", "", "");
+                    System.out.printf("| %-2s | %-20s | %-42s | %-12s | %-12s | %-13s | %-10s | %-12s | %-19s |\n",
+                            "", titleLine, descLine, "", "", "", "", "", "");
                 }
             }
         }
-        System.out.println("-------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+        System.out.println("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
     }
 
-    private String[] splitDescription(String desc, int maxLength) {
+    private String[] splitField(String desc, int maxLength) {
         ArrayList<String> lines = new ArrayList<>();
         while (desc.length() > maxLength) {
             int splitIndex = desc.lastIndexOf(' ', maxLength);
@@ -91,6 +78,36 @@ public class Task {
         }
         lines.add(desc);
         return lines.toArray(new String[0]);
+    }
+
+    private String getDependencies(Database todolist, int taskId) {
+        String depSql = "SELECT dependency_id FROM task_dependencies WHERE task_id = ?";
+        StringBuilder dependencies = new StringBuilder();
+        try (PreparedStatement depStmt = todolist.db.prepareStatement(depSql)) {
+            depStmt.setInt(1, taskId);
+            ResultSet depRs = depStmt.executeQuery();
+            while (depRs.next()) {
+                dependencies.append(depRs.getInt("dependency_id")).append(" ");
+            }
+        } catch (SQLException e) {
+            System.out.println("SQL Error: " + e.getMessage());
+        }
+        return dependencies.length() > 0 ? dependencies.toString().trim() : "None";
+    }
+
+    private String getRecurrence(Database todolist, int taskId){
+        String cmd = "SELECT recurrence_interval FROM tasks WHERE id = ?";
+        String recurrence = "";
+        try(PreparedStatement stmt = todolist.db.prepareStatement(cmd)){
+            stmt.setInt(1, taskId);
+            ResultSet result = stmt.executeQuery();
+            if (result.next()) { 
+                recurrence = result.getString("recurrence_interval");
+            }
+        } catch (SQLException e) {
+            System.out.println("SQL Error: " + e.getMessage());
+        }
+        return recurrence != null ? recurrence : "None";
     }
 
     //add new task
@@ -142,8 +159,9 @@ public class Task {
         
         ArrayList<Task> newDataToUpdate = res.sortTasks();
         int update = db.updateAfterSort(newDataToUpdate);
+        int c = res.getChoice();
         if(update>=1){
-            switch(res.getChoice()){
+            switch(c){
                 case 1:
                     System.out.println("Tasks sorted by due date (Ascending)");
                     break;
@@ -276,23 +294,6 @@ public class Task {
         }
     }
 
-    //public void setCompletion(ArrayList<Task> tasks,Database db){
-    //    System.out.println(ANSI_YELLOW + "\n=== Mark Task Completion ===" + ANSI_RESET);
-    //    System.out.print("Enter the task number you want to mark as complete: ");
-    //    int target = input.nextInt();
-    //    input.nextLine();
-        
-    //    for(Task task : tasks){
-    //        if(task.taskID == target){
-    //            int update = db.updateTask(target, "status", "Complete");
-    //            if(update >= 1){
-    //                System.out.println(ANSI_GREEN + "Task \"" + task.title + "\" marked as complete!\n" + ANSI_RESET);
-    //            }else{
-    //                System.out.println(ANSI_RED + "Failed to update task completion\n" + ANSI_RESET);
-    //            }
-    //        }
-    //    }
-    //}
 
     public void setTitle(ArrayList<Task> tasks,Database db){
         System.out.println(ANSI_YELLOW + "\n=== Change Task Title ===" + ANSI_RESET);

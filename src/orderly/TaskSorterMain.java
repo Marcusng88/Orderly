@@ -117,7 +117,7 @@ class TaskSorter {
             System.out.println("4. Priority (Low to High)");
             System.out.println("5. Exit");
             TaskSorter x = new TaskSorter(this.data);
-            int choice = scanner.nextInt();
+            choice = scanner.nextInt();
             switch (choice) {
                 case 1:
                     this.newData = x.byDueDate( data,true);

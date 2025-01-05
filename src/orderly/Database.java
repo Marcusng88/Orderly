@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 
 import com.google.gson.Gson;
-import com.mysql.cj.protocol.Resultset;
+
 
 public class Database {
     public Connection db;
@@ -25,27 +25,44 @@ public class Database {
             ResultSet result = stmt.executeQuery("select * from tasks");
 
             while(result.next()){
-                if(result.getString("dependencies") == null){
-                    Task task = new Task(
-                        result.getInt("id"), 
-                        result.getString("title"), 
-                        result.getString("description"), 
-                        result.getString("status"), 
-                        result.getString("due_date"), 
-                        result.getString("category"), 
-                        result.getString("priority"));
-    
-                    tasks.add(task);
-                }else{
-                    DependencyTask task = new DependencyTask(
-                        result.getInt("id"), 
-                        result.getString("title"), 
-                        result.getString("description"), 
-                        result.getString("status"), 
-                        result.getString("due_date"), 
-                        result.getString("category"), 
+                if(result.getString("recurrence_interval") != null){
+                    RecurringTask task = new RecurringTask(
+                        result.getInt("id"),
+                        result.getString("title"),
+                        result.getString("description"),
+                        result.getString("status"),
+                        result.getString("due_date"),
+                        result.getString("category"),
                         result.getString("priority"),
-                        result.getString("dependencies"));
+                        result.getString("recurrence_interval"),
+                        result.getString("vector"));
+                        
+                    tasks.add(task);
+                }
+                else if(result.getString("dependencies") != null){
+                    DependencyTask task = new DependencyTask(
+                            result.getInt("id"),
+                            result.getString("title"),
+                            result.getString("description"),
+                            result.getString("status"),
+                            result.getString("due_date"),
+                            result.getString("category"),
+                            result.getString("priority"),
+                            result.getString("dependencies"),
+                            result.getString("vector"));
+
+                    tasks.add(task);
+
+                }else{
+                    Task task = new Task(
+                            result.getInt("id"),
+                            result.getString("title"),
+                            result.getString("description"),
+                            result.getString("status"),
+                            result.getString("due_date"),
+                            result.getString("category"),
+                            result.getString("priority"),
+                            result.getString("vector"));
 
                     tasks.add(task);
                 }
@@ -56,36 +73,6 @@ public class Database {
         }
 
         return tasks;
-    }
-    public ArrayList<Task> readAllData(){
-        ArrayList<Task> tasksForSorting = new ArrayList<>();
-
-        try {
-            Statement stmt = db.createStatement();
-            ResultSet result = stmt.executeQuery("SELECT * from tasks");
-
-            while(result.next()){
-                Task task = new Task(
-                result.getInt("id"), 
-                result.getString("title"), 
-                result.getString("description"), 
-                result.getString("status"), 
-                result.getString("due_date"), 
-                result.getString("category"), 
-                result.getString("priority"));
-                result.getString("recurrence_interval");
-                result.getString("dependencies");
-                result.getString("vector");
-
-
-                tasksForSorting.add(task);
-            }
-           
-        }catch (SQLException e) {
-            System.out.println("SQL Error: " + e.getMessage());
-        }
-
-        return tasksForSorting;
     }
 
     public int insertTask(String title,String desc,String dueDate,String category,String priority){
@@ -114,6 +101,33 @@ public class Database {
         }
         
     }
+
+    public int insertRecurring(String title,String desc,String dueDate,String category,String priority,String recurrence){
+        try{
+            // combine title and description to a sentence and use it to generate vector embedding
+            String sentence = title + " " + desc;
+            double[] embedding = VectorSearch.getEmbeddings(sentence);
+            Gson gson = new Gson();
+            // convert vectors into json string
+            String embeddingString = gson.toJson(embedding);
+
+            String query = "INSERT INTO tasks (title, description, due_date, category, priority, recurrence_interval, vector) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement stmt = db.prepareStatement(query);
+            stmt.setString(1, title);
+            stmt.setString(2, desc);
+            stmt.setString(3, dueDate);
+            stmt.setString(4, category);
+            stmt.setString(5, priority);
+            stmt.setString(6, recurrence);
+            stmt.setString(7, embeddingString);
+            return stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("SQL Error: " + e.getMessage());
+            return 0;
+        }
+    }
+
 
     public int updateTask(int target,String field,String newData){
         try {
@@ -185,26 +199,72 @@ public class Database {
                 int res = idColumn.getInt("id");
                 idList.add(res);
             }
+            int i = 0;
+            for(Task task : data){
+                // current row got recurrenceInternal
+                if(task instanceof RecurringTask){
+                    String update = "UPDATE tasks SET title=? , description=? , status=? , due_date=? , category=? , priority=? , recurrence_interval=?  , vector=? WHERE id=? ";
+                    PreparedStatement stmt = db.prepareStatement(update);
+                    RecurringTask recurringTask = (RecurringTask) task;
+ 
+                    stmt.setString(1, recurringTask.title);
+                    stmt.setString(2, recurringTask.desc);
+                    stmt.setString(3, recurringTask.status);
+                    stmt.setString(4, recurringTask.dueDate);
+                    stmt.setString(5, recurringTask.category);
+                    stmt.setString(6, recurringTask.priority);
+                    stmt.setString(7, recurringTask.recurrence);
+                    stmt.setString(8,recurringTask.vector);
+                    
+                    stmt.setInt(9, idList.get(i)); 
+                    i++;
+                    stmt.addBatch();
+                    
+                    stmt.executeBatch();
+                }
+                // current row got dependencies
+                else if(task instanceof DependencyTask){
+                    String update = "UPDATE tasks SET title=? , description=? , status=? , due_date=? , category=? , priority=? , dependencies=? , vector=? WHERE id=? ";
+                    PreparedStatement stmt = db.prepareStatement(update);
+                    DependencyTask dependencyTask = (DependencyTask) task;
+ 
+                    stmt.setString(1, dependencyTask.title);
+                    stmt.setString(2, dependencyTask.desc);
+                    stmt.setString(3, dependencyTask.status);
+                    stmt.setString(4, dependencyTask.dueDate);
+                    stmt.setString(5, dependencyTask.category);
+                    stmt.setString(6, dependencyTask.priority);
+                    stmt.setString(7, dependencyTask.dependency);
+                    stmt.setString(8,dependencyTask.vector);
+                    
+                    stmt.setInt(9, idList.get(i)); 
+                    i++;
+                    stmt.addBatch();
+                    
+                    stmt.executeBatch();
+                }
+                // current row dont have recurrenceInterval and dependency
+                else {
+                    String update = "UPDATE tasks SET title=? , description=? , status=? , due_date=? , category=? , priority=? , vector=? WHERE id=? ";
+                    PreparedStatement stmt = db.prepareStatement(update);
 
-            String update = "UPDATE tasks SET title=? , description=? , status=? , due_date=? , category=? , priority=? , recurrence_interval=? , dependencies=? , vector=? WHERE id=? ";
-            PreparedStatement stmt = db.prepareStatement(update);
-            
-            for (int i = 0; i < data.size() ; i++) {
-                
-                
-                stmt.setString(1, data.get(i).title);
-                stmt.setString(2, data.get(i).desc);
-                stmt.setString(3, data.get(i).status);
-                stmt.setString(4, data.get(i).dueDate);
-                stmt.setString(5, data.get(i).category);
-                stmt.setString(6, data.get(i).priority);
-                stmt.setString(7, data.get(i).recurrenceInterval);
-                stmt.setString(8, data.get(i).dependencies);
-                stmt.setString(9,data.get(i).vector);
-                stmt.setInt(10, idList.get(i)); 
-                stmt.addBatch();
+ 
+                    stmt.setString(1, task.title);
+                    stmt.setString(2, task.desc);
+                    stmt.setString(3, task.status);
+                    stmt.setString(4, task.dueDate);
+                    stmt.setString(5, task.category);
+                    stmt.setString(6, task.priority);
+                    stmt.setString(7,task.vector);
+                    
+                    stmt.setInt(8, idList.get(i)); 
+                    i++;
+                    stmt.addBatch();
+                    
+                    stmt.executeBatch();
+                }
+    
             }
-            stmt.executeBatch();
             return 1;
 
             
@@ -213,4 +273,5 @@ public class Database {
             return 0;
         }
     }
+    
 }

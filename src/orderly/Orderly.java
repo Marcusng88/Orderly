@@ -30,9 +30,9 @@ public class Orderly {
         while (true) { 
             // Fill tasks arraylist with database data
             tasks = todolist.readAll();
-            tasksForSorting = todolist.readAllData();
             Task manager = new Task();
             DependencyTask dependencyManager = new DependencyTask();
+            RecurringTask recurringManager = new RecurringTask();
 
             // Display menu ; Prompt user for action
             int action = mainMenu();           
@@ -58,6 +58,23 @@ public class Orderly {
                     }
                 }
                 case 4 -> {
+                    recurMenu:
+                    while (true) { 
+                        action = recurMenu();
+                        input.nextLine();
+                        try {
+                            switch (action) {
+                                case 1 -> recurringManager.addRecurringTask(input, todolist);
+                                case 2 -> recurringManager.markTaskAsCompleted(input, todolist);
+                                case 3 -> {break recurMenu;}
+                                default -> System.out.println(ANSI_RED + "\nInvalid choice. Please Try again.\n" + ANSI_RESET);
+                            }
+                        } catch (Exception e) {
+                            System.out.println("SQL Error: " + e.getMessage());
+                        }
+                    }
+                }
+                case 5 -> {
                     editMenu:
                     while (true) { 
                         action = editMenu();
@@ -74,11 +91,11 @@ public class Orderly {
                         }
                     }
                 }
-                case 5 -> manager.deleteTask(tasks, todolist);
-                case 6 -> System.out.println(); // recurrence task
-                case 7 -> manager.sortTask(tasksForSorting,todolist); // sort task
-                case 8 -> manager.searchTask(tasks,todolist); // normal search
-                case 9 -> manager.searchTasksVector(tasks,todolist); // vector search
+
+                case 6 -> manager.deleteTask(tasks, todolist);
+                case 7 -> manager.searchTask(tasks,todolist);
+                case 8 -> manager.searchTasksVector(tasks, todolist);
+                case 9 -> manager.sortTask(tasks, todolist);
                 case 10 -> {
                     System.out.println(ANSI_RED + "Exiting Orderly..." + ANSI_RESET);
                     break mainMenu;
@@ -95,12 +112,12 @@ public class Orderly {
         System.out.println("1.  View Tasks");
         System.out.println("2.  Add a New Task");
         System.out.println("3.  Manage a Task");
-        System.out.println("4.  Edit a Task");
-        System.out.println("5.  Delete a Task");
-        System.out.println("6.  Set a recurrence task");
-        System.out.println("7.  Sort task");
-        System.out.println("8.  Search a Task");
-        System.out.println("9.  Search a Task (using similarity search)");
+        System.out.println("4.  Manage Recurring Tasks");
+        System.out.println("5.  Edit a Task");
+        System.out.println("6.  Delete a Task");
+        System.out.println("7.  Search a Task");
+        System.out.println("8.  Search a task (similarity search)");
+        System.out.println("9.  Sort task");
         System.out.println("10. Exit Program");
         System.out.print(ANSI_PURPLE + "Choose a task >> " + ANSI_YELLOW);
 
@@ -130,6 +147,16 @@ public class Orderly {
         System.out.println("5. Change Task Priority");
         System.out.println("6. Set Dependency");
         System.out.println("7. Back to Main Menu");
+        System.out.print(ANSI_PURPLE + "Choose an action >> " + ANSI_YELLOW);
+
+        return input.nextInt();
+    }
+
+    private static int recurMenu(){
+        System.out.println(ANSI_YELLOW + "\n=== Manage Recurring Tasks ===" + ANSI_RESET);
+        System.out.println("1. Add Recurring Task");
+        System.out.println("2. Mark Task as Completed");
+        System.out.println("3. Back to Main Menu");
         System.out.print(ANSI_PURPLE + "Choose an action >> " + ANSI_YELLOW);
 
         return input.nextInt();
