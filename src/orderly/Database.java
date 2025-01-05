@@ -11,7 +11,7 @@ public class Database {
 
     public Database(){
         try {
-            db = DriverManager.getConnection("jdbc:mysql://localhost:3306/todolist","root","755788");
+            db = DriverManager.getConnection("jdbc:mysql://localhost:3306/todolist","root","fop2024");
         } catch (SQLException e) {
             System.out.println("SQL Error: " + e.getMessage());
         }

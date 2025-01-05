@@ -27,7 +27,7 @@ public class VectorSearch {
     // database username here
     private static String user = "root";
     // database password here;
-    private static String password = "755788";
+    private static String password = "fop2024";
 
     // this will generate vectors embedding for the task title,it will return a double array
     public static double[] getEmbeddings(String sentence) {
@@ -55,10 +55,6 @@ public class VectorSearch {
 
             // Send the request and get the response
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            // Print the response for debugging
-            System.out.println("Response Code: " + response.statusCode());
-            // System.out.println("Response Body: " + response.body());
 
             // Parse the JSON response to extract the embeddings
             JsonObject jsonResponse = JsonParser.parseString(response.body()).getAsJsonObject();
