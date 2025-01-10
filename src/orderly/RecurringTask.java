@@ -25,7 +25,7 @@ public class RecurringTask extends Task{
         String recurrence_interval = scanner.nextLine();
 
         todolist.insertRecurring(taskTitle, description, LocalDate.now().toString(), "Recurring", "None", recurrence_interval);
-        System.out.println("Recurring Task \"" + title + "\" created successfully!");        
+        System.out.println("Recurring Task \"" + taskTitle + "\" created successfully!");        
     }
 
     public void markTaskAsCompleted(Scanner scanner, Database todolist) throws SQLException {

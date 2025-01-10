@@ -349,9 +349,9 @@ public class Task {
                     if(task.taskID == target){
                         int update = db.updateTask(target, "due_date", newData);
                         if(update >= 1){
-                            System.out.println(ANSI_GREEN + "Task description successfully changed for \"" + task.title + "\"!\n" + ANSI_RESET);
+                            System.out.println(ANSI_GREEN + "Task due date successfully changed for \"" + task.title + "\"!\n" + ANSI_RESET);
                         }else{
-                            System.out.println(ANSI_RED + "Failed to update task description\n" + ANSI_RESET);
+                            System.out.println(ANSI_RED + "Failed to update task due date\n" + ANSI_RESET);
                         }
                     }
                 }

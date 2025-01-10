@@ -5,6 +5,7 @@
 package orderly;
 
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Orderly {
@@ -35,9 +36,15 @@ public class Orderly {
             RecurringTask recurringManager = new RecurringTask();
             Analytics dashboard = new Analytics();
 
-            // Display menu ; Prompt user for action
-            int action = mainMenu();           
-            input.nextLine();
+            int action = 0;
+            try {
+                action = mainMenu();
+                input.nextLine(); // Consume newline
+            } catch (InputMismatchException e) {
+                System.out.println(ANSI_RED + "Invalid input. Please enter a number." + ANSI_RESET);
+                input.nextLine(); 
+                continue; 
+            }
             switch (action) {
                 case 1 -> manager.viewAll(tasks);
                 case 2 -> manager.newTask(todolist);
