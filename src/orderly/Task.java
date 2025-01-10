@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -222,11 +223,21 @@ public class Task {
     //mark the task as complete
     public void markTaskComplete() {
         Database todolist = new Database();
+        int target = 0;
         System.out.println(ANSI_YELLOW + "\n=== Mark Task Completion ===" + ANSI_RESET);
-        System.out.print("Enter the task number you want to mark as complete: ");
-        int target = input.nextInt();
-        input.nextLine();
 
+        while (true) { 
+            try {
+                System.out.print("Enter the task number you want to mark as complete: ");
+                target = input.nextInt();
+                input.nextLine();
+                break;
+            } catch (InputMismatchException e) {
+                System.out.println(ANSI_RED + "Please enter a valid task ID." + ANSI_RESET);
+                input.nextLine();
+            }
+        }
+        
         try {
 
             // Fetch the task's dependencies
@@ -297,15 +308,27 @@ public class Task {
 
     public void setTitle(ArrayList<Task> tasks,Database db){
         System.out.println(ANSI_YELLOW + "\n=== Change Task Title ===" + ANSI_RESET);
-        System.out.print("Enter the task number you want to modify: ");
-        int target = input.nextInt();
-        input.nextLine();
-        System.out.print("Enter a new title for the task: ");
-        String newData = input.nextLine();
+        int update = 0;
+        int target = 0;
+        String newData;
+
+        while (true) { 
+            try {
+                System.out.print("Enter the task number you want to modify: ");
+                target = input.nextInt();
+                input.nextLine();
+                System.out.print("Enter a new title for the task: ");
+                newData = input.nextLine();
+                break;
+            } catch (InputMismatchException e) {
+                System.out.println(ANSI_RED + "Please enter a valid task ID." + ANSI_RESET);
+                input.nextLine();
+            }
+        }
         
         for(Task task : tasks){
             if(task.taskID == target){
-                int update = db.updateTask(target, "title", newData);
+                update = db.updateTask(target, "title", newData);
                 if(update >= 1){
                     System.out.println(ANSI_GREEN + "Task title successfully changed to \"" + newData + "\"!\n" + ANSI_RESET);
                 }else{
@@ -313,19 +336,32 @@ public class Task {
                 }
             }
         }
+        if (update == 0) System.out.println(ANSI_RED + "This task does not exist. Please try again." + ANSI_RESET);
     }
 
     public void setDescription(ArrayList<Task> tasks,Database db){
         System.out.println(ANSI_YELLOW + "\n=== Change Task Description ===" + ANSI_RESET);
-        System.out.print("Enter the task number you want to modify: ");
-        int target = input.nextInt();
-        input.nextLine();
-        System.out.print("Enter a new description for the task: ");
-        String newData = input.nextLine();
+        int update = 0;
+        int target = 0;
+        String newData;
+
+        while (true) { 
+            try {
+                System.out.print("Enter the task number you want to modify: ");
+                target = input.nextInt();
+                input.nextLine();
+                System.out.print("Enter a new description for the task: ");
+                newData = input.nextLine();
+                break;
+            } catch (InputMismatchException e) {
+                System.out.println(ANSI_RED + "Please enter a valid task ID." + ANSI_RESET);
+                input.nextLine();
+            }
+        }
         
         for(Task task : tasks){
             if(task.taskID == target){
-                int update = db.updateTask(target, "description", newData);
+                update = db.updateTask(target, "description", newData);
                 if(update >= 1){
                     System.out.println(ANSI_GREEN + "Task description successfully changed for \"" + task.title + "\"!\n" + ANSI_RESET);
                 }else{
@@ -333,13 +369,25 @@ public class Task {
                 }
             }
         }
+        if (update == 0) System.out.println(ANSI_RED + "This task does not exist. Please try again." + ANSI_RESET);
     }
 
     public void setDueDate(ArrayList<Task> tasks,Database db){
         System.out.println(ANSI_YELLOW + "\n=== Change Task Due Date ===" + ANSI_RESET);
-        System.out.print("Enter the task number you want to modify: ");
-        int target = input.nextInt();
-        input.nextLine();
+        int update = 0;
+        int target = 0;
+
+        while (true) { 
+            try {
+                System.out.print("Enter the task number you want to modify: ");
+                target = input.nextInt();
+                input.nextLine();
+                break;
+            } catch (InputMismatchException e) {
+                System.out.println(ANSI_RED + "Please enter a valid task ID." + ANSI_RESET);
+                input.nextLine();
+            }
+        }
         
         while (true) { 
             System.out.print("Enter a new due date for the task: ");
@@ -347,7 +395,7 @@ public class Task {
             if(isValidDate(newData)){
                 for(Task task : tasks){
                     if(task.taskID == target){
-                        int update = db.updateTask(target, "due_date", newData);
+                        update = db.updateTask(target, "due_date", newData);
                         if(update >= 1){
                             System.out.println(ANSI_GREEN + "Task due date successfully changed for \"" + task.title + "\"!\n" + ANSI_RESET);
                         }else{
@@ -360,19 +408,32 @@ public class Task {
                 System.out.println(ANSI_RED + "Invalid date. Please try again." + ANSI_RESET);
             }
         }
+        if (update == 0) System.out.println(ANSI_RED + "This task does not exist. Please try again." + ANSI_RESET);
     }
 
     public void setCategory(ArrayList<Task> tasks,Database db){
         System.out.println(ANSI_YELLOW + "\n=== Change Task Category ===" + ANSI_RESET);
-        System.out.print("Enter the task number you want to modify: ");
-        int target = input.nextInt();
-        input.nextLine();
-        System.out.print("Enter a new category for the task: ");
-        String newData = input.nextLine();
+        int update = 0;
+        int target = 0;
+        String newData;
+
+        while (true) { 
+            try {
+                System.out.print("Enter the task number you want to modify: ");
+                target = input.nextInt();
+                input.nextLine();
+                System.out.print("Enter a new category for the task: ");
+                newData = input.nextLine();
+                break;
+            } catch (InputMismatchException e) {
+                System.out.println(ANSI_RED + "Please enter a valid task ID." + ANSI_RESET);
+                input.nextLine();
+            }
+        }
         
         for(Task task : tasks){
             if(task.taskID == target){
-                int update = db.updateTask(target, "category", newData);
+                update = db.updateTask(target, "category", newData);
                 if(update >= 1){
                     System.out.println(ANSI_GREEN + "Task category successfully changed for \"" + task.title + "\"!\n" + ANSI_RESET);
                 }else{
@@ -380,19 +441,32 @@ public class Task {
                 }
             }
         }
+        if (update == 0) System.out.println(ANSI_RED + "This task does not exist. Please try again." + ANSI_RESET);
     }
 
     public void setPriority(ArrayList<Task> tasks,Database db){
         System.out.println(ANSI_YELLOW + "\n=== Change Task Priority ===" + ANSI_RESET);
-        System.out.print("Enter the task number you want to modify: ");
-        int target = input.nextInt();
-        input.nextLine();
-        System.out.print("Enter a new priority for the task: ");
-        String newData = input.nextLine();
+        int update = 0;
+        int target = 0;
+        String newData;
+
+        while (true) { 
+            try {
+                System.out.print("Enter the task number you want to modify: ");
+                target = input.nextInt();
+                input.nextLine();
+                System.out.print("Enter a new priority for the task: ");
+                newData = input.nextLine();
+                break;
+            } catch (Exception e) {
+                System.out.println(ANSI_RED + "Please enter a valid task ID." + ANSI_RESET);
+                input.nextLine();
+            }
+        }
         
         for(Task task : tasks){
             if(task.taskID == target){
-                int update = db.updateTask(target, "priority", newData);
+                update = db.updateTask(target, "priority", newData);
                 if(update >= 1){
                     System.out.println(ANSI_GREEN + "Task priority successfully changed for \"" + task.title + "\"!\n" + ANSI_RESET);
                 }else{
@@ -400,24 +474,38 @@ public class Task {
                 }
             }
         }
+        if (update == 0) System.out.println(ANSI_RED + "This task does not exist. Please try again." + ANSI_RESET);
     }
 
     // task deletion
     public void deleteTask(ArrayList<Task> tasks,Database db){
         System.out.println(ANSI_YELLOW + "\n=== Delete Task ===" + ANSI_RESET);
-        System.out.print("Enter the task number you want to delete: ");
-        int target = input.nextInt();
-        input.nextLine();
+        int update = 0;
+        int target = 0;
+
+        while (true) { 
+            try {
+                System.out.print("Enter the task number you want to delete: ");
+                target = input.nextInt();
+                input.nextLine();
+                break;
+            } catch (InputMismatchException e) {
+                System.out.println(ANSI_RED + "Please enter a valid task ID." + ANSI_RESET);
+                input.nextLine();
+            } 
+        }
 
         for(Task task : tasks){
             if(task.taskID == target){
-                int update = db.deleteTask(target);
+                update = db.deleteTask(target);
                 if(update >= 1){
                     System.out.println(ANSI_GREEN + "Task \"" + task.title + "\" was deleted successfully!\n" + ANSI_RESET);
                 }else{
                     System.out.println(ANSI_RED + "Failed to delete task\n" + ANSI_RESET);
                 }
-            }
+            } 
         }
+
+        if (update == 0) System.out.println(ANSI_RED + "This task does not exist. Please try again." + ANSI_RESET);
     }
 }

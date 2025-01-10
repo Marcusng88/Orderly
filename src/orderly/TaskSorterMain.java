@@ -116,8 +116,20 @@ class TaskSorter {
             System.out.println("3. Priority (High to Low)");
             System.out.println("4. Priority (Low to High)");
             System.out.println("5. Exit");
+
+            while (true) { 
+                System.out.printf("Pick a sort pattern >> ");
+                try {
+                    choice = scanner.nextInt();
+                    break;
+                } catch (InputMismatchException e) {
+                    System.out.println("Please enter a number.");
+                    scanner.nextLine();
+                }
+            }
+
             TaskSorter x = new TaskSorter(this.data);
-            choice = scanner.nextInt();
+        
             switch (choice) {
                 case 1:
                     this.newData = x.byDueDate( data,true);
@@ -141,7 +153,6 @@ class TaskSorter {
                 default:
                     System.out.println("Invalid choice. Please enter a number between 1 and 5.");
             }
-            scanner.close();
         }
         return this.newData;
     }
