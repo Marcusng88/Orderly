@@ -48,7 +48,7 @@ CREATE TABLE `tasks` (
   `status` enum('Incomplete','Complete') DEFAULT 'Incomplete',
   `due_date` date DEFAULT NULL,
   `category` varchar(50) DEFAULT NULL,
-  `priority` enum('Low','Moderate','High','None') DEFAULT NULL,
+  `priority` enum('Low','Medium','High','None') DEFAULT NULL,
   `recurrence_interval` enum('Daily','Weekly','Monthly') DEFAULT NULL,
   `dependencies` text,
   `vector` json NOT NULL,
