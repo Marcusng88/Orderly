@@ -27,7 +27,7 @@ public class VectorSearch {
     // database username here
     private static String user = "root";
     // database password here;
-    private static String password = "fop2024";
+    private static String password = "755788";
 
     // this will generate vectors embedding for the task title,it will return a double array
     public static double[] getEmbeddings(String sentence) {

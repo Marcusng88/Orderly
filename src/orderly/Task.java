@@ -164,16 +164,16 @@ public class Task {
         if(update>=1){
             switch(c){
                 case 1:
-                    System.out.println("Tasks sorted by due date (Ascending)");
+                    System.out.println(Orderly.ANSI_GREEN+"Tasks sorted by due date (Ascending)"+Orderly.ANSI_RESET);
                     break;
                 case 2:
-                    System.out.println("Tasks sorted by due date (Descending)");
+                    System.out.println(Orderly.ANSI_GREEN+"Tasks sorted by due date (Descending)"+Orderly.ANSI_RESET);
                     break;
                 case 3:
-                    System.out.println("Tasks sorted by priority (High to Low)");
+                    System.out.println(Orderly.ANSI_GREEN+"Tasks sorted by priority (High to Low)"+Orderly.ANSI_RESET);
                     break;
                 case 4:
-                    System.out.println("Tasks sorted by priority (Low to high)");
+                    System.out.println(Orderly.ANSI_GREEN+"Tasks sorted by priority (Low to high)"+Orderly.ANSI_RESET);
                     break;
             }
 
@@ -193,7 +193,7 @@ public class Task {
 
         ArrayList<Task> res = SearchingTask.searchTasks(allWork, keyword);
         if (res.isEmpty()){
-            System.out.println("No task found");
+            System.out.println(Orderly.ANSI_RED+"No task found"+Orderly.ANSI_RESET);
         }
         else{
             for(Task element: res){
@@ -266,11 +266,11 @@ public class Task {
                         String dependencyStatus = rs.getString("status");
 
                         if (!"Complete".equalsIgnoreCase(dependencyStatus)) {
-                            System.out.println("Warning: Task ID " + target + " cannot be marked as complete because it depends on Task ID " + depId + " which is not complete!");
+                            System.out.println(Orderly.ANSI_RED+"Warning: Task ID " + target + " cannot be marked as complete because it depends on Task ID " + depId + " which is not complete!"+Orderly.ANSI_RESET);
                             return;
                         }
                     } else{
-                        System.out.println("Dependency Task ID " + depId + " not found in the tasks table.");
+                        System.out.println(Orderly.ANSI_RED+"Dependency Task ID " + depId + " not found in the tasks table."+Orderly.ANSI_RESET);
                         return;
                     }
                 }
@@ -297,7 +297,7 @@ public class Task {
             try(PreparedStatement updateStmt = todolist.db.prepareStatement(updateSql)){
                 updateStmt.setInt(1, target);
                 updateStmt.executeUpdate();
-                System.out.println("Task \"" + taskTitle + "\" marked as complete!");
+                System.out.println(Orderly.ANSI_GREEN+"Task \"" + taskTitle + "\" marked as complete!"+Orderly.ANSI_RESET);
             }
             
         } catch (SQLException e) {
