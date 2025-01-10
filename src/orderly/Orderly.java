@@ -5,6 +5,7 @@
 package orderly;
 
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Orderly {
@@ -35,17 +36,29 @@ public class Orderly {
             RecurringTask recurringManager = new RecurringTask();
             Analytics dashboard = new Analytics();
 
-            // Display menu ; Prompt user for action
-            int action = mainMenu();           
-            input.nextLine();
+            int action = 0;
+            try {
+                action = mainMenu();
+                input.nextLine(); // Consume newline
+            } catch (InputMismatchException e) {
+                System.out.println(ANSI_RED + "Invalid input. Please enter a number." + ANSI_RESET);
+                input.nextLine(); 
+                continue; 
+            }
             switch (action) {
                 case 1 -> manager.viewAll(tasks);
                 case 2 -> manager.newTask(todolist);
                 case 3 -> {
                     mgmtMenu:
                     while (true) { 
-                        action = mgmtMenu();
-                        input.nextLine();
+                        try {
+                            action = mgmtMenu();
+                            input.nextLine(); // Consume newline
+                        } catch (InputMismatchException e) {
+                            System.out.println(ANSI_RED + "Invalid input. Please enter a number." + ANSI_RESET);
+                            input.nextLine(); 
+                            continue; 
+                        }
                         switch (action) {
                             case 1 -> manager.markTaskComplete();
                             case 2 -> manager.setTitle(tasks, todolist);
@@ -61,8 +74,14 @@ public class Orderly {
                 case 4 -> {
                     recurMenu:
                     while (true) { 
-                        action = recurMenu();
-                        input.nextLine();
+                        try {
+                            action = recurMenu();
+                            input.nextLine(); // Consume newline
+                        } catch (InputMismatchException e) {
+                            System.out.println(ANSI_RED + "Invalid input. Please enter a number." + ANSI_RESET);
+                            input.nextLine(); 
+                            continue; 
+                        }
                         try {
                             switch (action) {
                                 case 1 -> recurringManager.addRecurringTask(input, todolist);
@@ -78,8 +97,14 @@ public class Orderly {
                 case 5 -> {
                     editMenu:
                     while (true) { 
-                        action = editMenu();
-                        input.nextLine();
+                        try {
+                            action = editMenu();
+                            input.nextLine(); // Consume newline
+                        } catch (InputMismatchException e) {
+                            System.out.println(ANSI_RED + "Invalid input. Please enter a number." + ANSI_RESET);
+                            input.nextLine(); 
+                            continue; 
+                        }
                         switch (action) {
                             case 1 -> dependencyManager.setTitle(tasks, todolist);
                             case 2 -> dependencyManager.setDescription(tasks, todolist);

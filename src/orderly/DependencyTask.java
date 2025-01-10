@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Set;
 
@@ -65,12 +66,23 @@ public class DependencyTask extends Task{
 
     public void setDependencies(){    
         System.out.println(ANSI_YELLOW + "\n=== Set Dependencies ===" + ANSI_RESET);
-        System.out.print("Enter task " + ANSI_CYAN + "number" + ANSI_RESET + " that depends on another task: ");
-        int dependentId = input.nextInt();
-        input.nextLine();
-        System.out.print("Enter the task " + ANSI_CYAN + "number" + ANSI_RESET + " it depends on: ");
-        int dependencyId = input.nextInt();
-        
+        int dependentId = 0;
+        int dependencyId = 0;
+
+        while (true) { 
+            try {
+                System.out.print("Enter task " + ANSI_CYAN + "number" + ANSI_RESET + " that depends on another task: ");
+                dependentId = input.nextInt();
+                input.nextLine();
+                System.out.print("Enter the task " + ANSI_CYAN + "number" + ANSI_RESET + " it depends on: ");
+                dependencyId = input.nextInt();
+                break;
+            } catch (InputMismatchException e) {
+                System.out.println(ANSI_RED + "Please enter a valid task ID." + ANSI_RESET);
+                input.nextLine();
+            }
+        }
+
         try{
 
             //check if adding this dependency creates a cycle

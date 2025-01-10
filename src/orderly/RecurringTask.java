@@ -2,6 +2,7 @@ package orderly;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class RecurringTask extends Task{
@@ -25,15 +26,24 @@ public class RecurringTask extends Task{
         String recurrence_interval = scanner.nextLine();
 
         todolist.insertRecurring(taskTitle, description, LocalDate.now().toString(), "Recurring", "None", recurrence_interval);
-        System.out.println("Recurring Task \"" + title + "\" created successfully!");        
+        System.out.println("Recurring Task \"" + taskTitle + "\" created successfully!");        
     }
 
     public void markTaskAsCompleted(Scanner scanner, Database todolist) throws SQLException {
         System.out.println("=== Mark Task as Completed ===");
-        System.out.print("Enter the ID of the task to mark as completed: ");
-        int taskId = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
+        int taskId = 0;
 
+        while (true) { 
+            try {
+                System.out.print("Enter the ID of the task to mark as completed: ");
+                taskId = scanner.nextInt();
+                break;
+            } catch (InputMismatchException e) {
+                System.out.println(ANSI_RED + "Please enter a valid task ID." + ANSI_RESET);
+                scanner.nextLine();
+            }
+        }
+        
         String selectSql = "SELECT * FROM tasks WHERE id = ?";
         try (PreparedStatement selectStmt = todolist.db.prepareStatement(selectSql)) {
             selectStmt.setInt(1, taskId);
