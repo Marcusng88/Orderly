@@ -110,7 +110,7 @@ class TaskSorter {
         Scanner scanner = new Scanner(System.in);
         outer:
         while (true) {
-            System.out.println("\n=== Sort Tasks ==="+Orderly.ANSI_RESET);
+            System.out.println(Orderly.ANSI_YELLOW+"\n=== Sort Tasks ==="+Orderly.ANSI_RESET);
             System.out.println("1. Ascending Order (Due Date)");
             System.out.println("2. Descending Order (Due Date)");
             System.out.println("3. Priority (High to Low)");
@@ -118,12 +118,12 @@ class TaskSorter {
             System.out.println("5. Exit");
 
             while (true) { 
-                System.out.printf("Pick a sort pattern >> ");
+                System.out.printf(Orderly.ANSI_BLUE+"Pick a sort pattern >> "+Orderly.ANSI_RESET);
                 try {
                     choice = scanner.nextInt();
                     break;
                 } catch (InputMismatchException e) {
-                    System.out.println("Please enter a number.");
+                    System.out.println(Orderly.ANSI_BLUE+"Please enter a number."+Orderly.ANSI_RESET);
                     scanner.nextLine();
                 }
             }
@@ -151,7 +151,7 @@ class TaskSorter {
                 case 5:
                     break outer;
                 default:
-                    System.out.println("Invalid choice. Please enter a number between 1 and 5.");
+                    System.out.println(Orderly.ANSI_RED+"Invalid choice. Please enter a number between 1 and 5."+Orderly.ANSI_RESET);
             }
         }
         return this.newData;
